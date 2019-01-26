@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">TweakSetupTool</string>
+    <string name="url_list">http://squidsky.ml/cdn/installer/dchatweak/android/deliveryList</string>
 
     <string name="activity_main_title">改造に最適なアプリをインストールします。</string>
     <string name="activity_button">インストール開始</string>
+    <string name="text_download_list">アプリリストをダウンロードしています。</string>
 </resources>
