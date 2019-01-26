@@ -1,7 +1,7 @@
 # DchaTweakSetupTool For Android
 This app is for android.
 
-If you are finding for Linux, use [this](https://github.com/ctab2labo/dchatweakappinstaller).
+If you are looking Linux version, you can use [this](https://github.com/ctab2labo/dchatweakappinstaller).
 
 # System Requirements
 OS: Android 5.1
