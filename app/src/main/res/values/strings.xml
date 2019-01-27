@@ -1,8 +1,16 @@
 <resources>
     <string name="app_name">TweakSetupTool</string>
-    <string name="url_list">http://squidsky.ml/cdn/installer/dchatweak/android/deliveryList</string>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="url_list">http://app.squidsky.ml/delivery/android/ctab2tool/deliveryList.json</string>
 
     <string name="activity_main_title">改造に最適なアプリをインストールします。</string>
     <string name="activity_button">インストール開始</string>
     <string name="text_download_list">アプリリストをダウンロードしています。</string>
+    <string name="dialog_download_list">アプリリストのダウンロード</string>
+    <string name="dialog_download_list_exception">ダウンロード中にエラーが発生しました。</string>
+    <string name="dialog_error_list_title">リスト処理中</string>
+    <string name="dialog_error_list_message">%1$sが発生し、処理を中断しました。</string>
+
+    <string name="choose_dialog_title">インストールするアプリを選択</string>
 </resources>

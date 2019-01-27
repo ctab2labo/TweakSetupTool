@@ -24,11 +24,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="100dp"
+            android:layout_marginRight="100dp"
             style="?android:attr/progressBarStyleHorizontal"/>
         <TextView
             android:id="@+id/progress_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="100dp"
             android:layout_gravity="right"
             android:text="0%"
             android:textSize="10pt"/>
