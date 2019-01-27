@@ -6,8 +6,8 @@ import android.content.DialogInterface;
 
 import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.json.AppPackage;
-import com.github.ctab2labo.tweaksetuptool.json.DeliveryList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // アプリリストからインストールアプリを選ぶためのダイアログクラス
@@ -15,39 +15,40 @@ public class ChoseListDialog extends AlertDialog.Builder {
     private OnCompleteListner completeListner;
     private OnCancelListner cancelListner;
     private List<AppPackage> packageList;
-    private final List<AppPackage> defaultList;
+    private boolean[] checks;
 
-    public ChoseListDialog(Context context, DeliveryList list) {
+    public ChoseListDialog(Context context, List<AppPackage> list) {
         super(context);
         this.setTitle(R.string.choose_dialog_title);
-        packageList = list.app_list;
-        defaultList = list.app_list;
-        final String[] appStrings = new String[packageList.size()];
+        packageList = list;
+        String[] appStrings = new String[packageList.size()];
 
         // アプリ名を取り出して、選択肢用
         for (int i=0;i<packageList.size();i++) {
             appStrings[i] = packageList.get(i).name;
         }
         // boolsをすべてtrueに
-        boolean[] bools = new boolean[appStrings.length];
-        for (int i=0;i<bools.length;i++) {
-            bools[i] = true;
+        checks = new boolean[appStrings.length];
+        for (int i=0;i<checks.length;i++) {
+            checks[i] = true;
         }
-        this.setMultiChoiceItems(appStrings, bools, new DialogInterface.OnMultiChoiceClickListener() {
+        this.setMultiChoiceItems(appStrings, checks, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which, boolean b) {
-                if (b) {
-                    packageList.add(defaultList.get(which));
-                } else {
-                    packageList.remove(defaultList.get(which));
-                }
+                checks[which] = b;
             }
         });
         this.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (completeListner != null) {
-                    completeListner.onComplete(packageList.toArray(new AppPackage[0]));
+                    List<AppPackage> checkedPackages = new ArrayList<>();
+                    for (int j=0;j<checks.length;j++) {
+                        if(checks[j]) {
+                            checkedPackages.add(packageList.get(j));
+                        }
+                    }
+                    completeListner.onComplete(checkedPackages.toArray(new AppPackage[0]));
                 }
             }
         });

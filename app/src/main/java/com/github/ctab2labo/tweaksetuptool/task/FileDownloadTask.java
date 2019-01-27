@@ -1,6 +1,5 @@
 package com.github.ctab2labo.tweaksetuptool.task;
 
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -9,12 +8,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
-    private final String TAG = "TweakSetupTool";
+import static com.github.ctab2labo.tweaksetuptool.Common.TAG;
+
+public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
     private final int BUFFER_SIZE = 1024;
     private String urlString;
     private File file;
@@ -30,7 +29,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(Void... obj) {
+    protected Exception doInBackground(Void... obj) {
         // URLをもとに初期化
         URLConnection connection;
         FileOutputStream fileOutputStream;
@@ -42,7 +41,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
             fileOutputStream = new FileOutputStream(file);
         } catch (Exception e) {
             Log.e(TAG, "FileDownloadTask:Exception", e);
-            return false;
+            return e;
         }
         connection.setReadTimeout(5000);
         connection.setConnectTimeout(30000);
@@ -61,7 +60,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
             }
         } catch(IOException e) {
             Log.d(TAG, "FileDownloadTask:IOException", e);
-            return false;
+            return e;
         }
 
         try {
@@ -70,9 +69,9 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
             bufferedInputStream.close();
         } catch(IOException e) {
             Log.e(TAG, "FileDownloadTask:IOException", e);
-            return false;
+            return e;
         }
-        return true;
+        return null;
     }
 
     private void updateProgress(int i, int i2) {
@@ -93,9 +92,9 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     @Override
-    protected void onPostExecute(Boolean aBoolean) {
+    protected void onPostExecute(Exception aException) {
         if (successListner != null) {
-            successListner.onSuccess(aBoolean);
+            successListner.onSuccess(aException);
         }
     }
 
@@ -104,7 +103,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     public interface OnSuccessListner {
-        void onSuccess(boolean bool);
+        void onSuccess(Exception bool);
     }
 
     public void setSuccessListner(OnSuccessListner successListner) {

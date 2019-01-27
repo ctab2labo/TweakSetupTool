@@ -13,4 +13,13 @@
     <string name="dialog_error_list_message">%1$sが発生し、処理を中断しました。</string>
 
     <string name="choose_dialog_title">インストールするアプリを選択</string>
+    <string name="text_download_app">%1$sのアプリデータをダウンロードしています。(%2$d/%3$d)</string>
+    <string name="text_install_app">%1$sをインストールしています。(%2$d/%3$d)</string>
+
+    <string name="toast_install_app">インストールボタンを押して、アプリをインストールしてください。</string>
+    <string name="text_all_success">すべてのインストールが完了しました。</string>
+
+    <string name="dialog_cancel_install_title">アプリのインストール</string>
+    <string name="dialog_cancel_install_message">インストールを続けますか。</string>
+    <string name="dialog_cancel_positive">続行</string>
 </resources>
