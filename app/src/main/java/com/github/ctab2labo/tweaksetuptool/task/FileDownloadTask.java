@@ -19,7 +19,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
     private File file;
     private OnProgressUpdateListner updateListner;
     private OnSuccessListner successListner;
-    private int totalByte;
+    private long totalByte;
     private int previosInt;
     private byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -47,13 +47,13 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
         connection.setConnectTimeout(30000);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, BUFFER_SIZE);
         totalByte = connection.getContentLength();
-        int currentByte = 0;
+        long currentByte = 0;
         previosInt = 0;
 
         // 読み取れたデータだけ書き込む。
         try {
             int len;
-            while((len = bufferedInputStream.read(buffer)) != -1){
+            while((len = bufferedInputStream.read(buffer)) >= 0){
                 fileOutputStream.write(buffer, 0, len);
                 currentByte += len;
                 updateProgress(currentByte, totalByte);
@@ -74,13 +74,13 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
         return null;
     }
 
-    private void updateProgress(int i, int i2) {
+    private void updateProgress(long i, long i2) {
         // 100分率を計算。変更があれば、パブリッシュ
         i = i * 100 / i2;
         i = i > 100 ? 100 : i;
         if (previosInt != i) {
-            previosInt = i;
-            publishProgress(i);
+            previosInt = (int) i;
+            publishProgress(previosInt);
         }
     }
 
