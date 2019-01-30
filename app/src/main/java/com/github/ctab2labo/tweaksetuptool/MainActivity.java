@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -68,19 +70,44 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
-        button.setEnabled(false);
-        titleView.setText(getString(R.string.text_download_list));
-        setBar(0);
-        setProgressMax(100);
-        FileDownloadTask task = new FileDownloadTask(getString(R.string.url_list), deliverylistFile);
-        task.setSuccessListner(urlListSuccessListner);
-        task.setUpdateListner(new FileDownloadTask.OnProgressUpdateListner() {
-            @Override
-            public void onUpdate(int i) {
-                setBar(i);
-            }
-        });
-        task.execute();
+        int i = 0;
+        try {
+            i = Settings.Secure.getInt(getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS);
+        } catch (Settings.SettingNotFoundException e) {}
+        if (i == 1) { // 提供元不明のアプリがオンなら
+            button.setEnabled(false);
+            titleView.setText(getString(R.string.text_download_list));
+            setBar(0);
+            setProgressMax(100);
+            // タスクを作成し、ファイルのダウンロードを開始
+            FileDownloadTask task = new FileDownloadTask(getString(R.string.url_list), deliverylistFile);
+            task.setSuccessListner(urlListSuccessListner);
+            task.setUpdateListner(new FileDownloadTask.OnProgressUpdateListner() {
+                @Override
+                public void onUpdate(int i) {
+                    setBar(i);
+                }
+            });
+            task.execute();
+        } else { // でなければダイアログを表示。
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_disable_non_market_title)
+                    .setMessage(R.string.dialog_disable_non_market_message)
+                    .setPositiveButton(R.string.dialog_disable_non_market_positive,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(MainActivity.this, CheckNonMarketService.class);
+                                    startService(intent);
+                                    intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+                                    startActivity(intent);
+                                    Toast.makeText(MainActivity.this, R.string.toast_enable_non_market, Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+
+        }
     }
 
     // Step1
@@ -194,8 +221,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
         } else {
             appsCount = -1;
             reset();
+            deleteAllDownloadedFiles();
             titleView.setText(R.string.text_all_success);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -247,10 +280,19 @@ public class MainActivity extends Activity implements View.OnClickListener{
         Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         intent.setData(Uri.fromFile(file));
         intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        /*intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);*/
 
         startActivityForResult(intent, REQUEST_APP_INSTALL);
-        Toast.makeText(this, R.string.toast_install_app, Toast.LENGTH_SHORT).show();
+        Toast toast = Toast.makeText(this, R.string.toast_install_app, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 150);
+        toast.show();
+    }
+
+    private void deleteAllDownloadedFiles() {
+        // ダウンロードしたファイルをすべて削除
+        for (File file : downloadedFiles) {
+            file.delete();
+        }
     }
 
     private void setProgressMax(int max) {

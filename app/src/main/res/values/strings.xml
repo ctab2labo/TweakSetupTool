@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">TweakSetupTool</string>
-    <string name="ok">OK</string>
-    <string name="cancel">キャンセル</string>
+    <string name="app_name">タブレット化セットアップツール</string>
     <string name="url_list">http://app.squidsky.ml/delivery/android/ctab2tool/deliveryList.json</string>
 
+
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
     <string name="activity_main_title">改造に最適なアプリをインストールします。</string>
     <string name="activity_button">インストール開始</string>
     <string name="text_download_list">アプリリストをダウンロードしています。</string>
@@ -22,4 +23,9 @@
     <string name="dialog_cancel_install_title">アプリのインストール</string>
     <string name="dialog_cancel_install_message">インストールを続けますか。</string>
     <string name="dialog_cancel_positive">続行</string>
+
+    <string name="dialog_disable_non_market_title">「提供元不明のアプリ」がオフ</string>
+    <string name="dialog_disable_non_market_message">お使いの端末の「提供元不明のアプリ」がオフになっています。\nオフになっている場合はこのアプリを使用することができません。\nこのアプリを使用するには「提供元不明のアプリ」をオンにしてください。</string>
+    <string name="toast_enable_non_market">「提供元不明のアプリ」のスイッチをオンにしてください。\nオンを検知したら自動でアプリに戻ります。</string>
+    <string name="dialog_disable_non_market_positive">設定へ移動</string>
 </resources>
