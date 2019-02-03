@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.ProtocolException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private AppPackage[] downloadPackages;
     private List<File> downloadedFiles;
     private File saveDirectory;
+	private String otherException;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,11 +153,20 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 dialog.show();
             } else {
                 reset();
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle(R.string.dialog_download_list)
-                        .setMessage(getString(R.string.dialog_download_list_exception) + "\n" + e.toString())
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
+				otherException = e.toString(); //get exception string
+				if(otherException.equals("java.net.ProtocolException: unexpected end of stream")) {
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(R.string.dialog_download_list)
+							.setMessage(getString(R.string.dialog_error_list_message, "ProtocolException"))
+							.setPositiveButton(R.string.ok, null)
+							.show();
+				} else {
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(R.string.dialog_download_list)
+							.setMessage(getString(R.string.dialog_download_list_exception) + "\n" + e.toString())
+							.setPositiveButton(R.string.ok, null)
+							.show();
+				}
             }
         }
     };
