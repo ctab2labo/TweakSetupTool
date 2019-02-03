@@ -43,6 +43,15 @@
             android:layout_gravity="center"
             android:text="@string/activity_button"
             android:textSize="12pt"/>
+		<Button
+            android:id="@+id/infoButton"
+            android:layout_marginTop="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/activity_versioninfo_title"
+            android:textSize="12pt"/>
+		
     </LinearLayout>
 
 </LinearLayout>

@@ -6,6 +6,8 @@
     <string name="ok">OK</string>
     <string name="cancel">キャンセル</string>
     <string name="activity_main_title">改造に最適なアプリをインストールします。</string>
+
+	<string name="activity_versioninfo_title">バージョン情報</string>
     <string name="activity_button">インストール開始</string>
     <string name="text_download_list">アプリリストをダウンロードしています。</string>
     <string name="dialog_download_list">アプリリストのダウンロード</string>
@@ -28,4 +30,6 @@
     <string name="dialog_disable_non_market_message">お使いの端末の「提供元不明のアプリ」がオフになっています。\nオフになっている場合はこのアプリを使用することができません。\nこのアプリを使用するには「提供元不明のアプリ」をオンにしてください。</string>
     <string name="toast_enable_non_market">「提供元不明のアプリ」のスイッチをオンにしてください。\nオンを検知したら自動でアプリに戻ります。</string>
     <string name="dialog_disable_non_market_positive">設定へ移動</string>
+	
+	<string name="check_update_button_text">アップデートを確認</string>
 </resources>

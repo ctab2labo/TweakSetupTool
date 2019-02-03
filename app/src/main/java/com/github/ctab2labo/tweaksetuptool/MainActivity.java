@@ -39,6 +39,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ProgressBar progress;
     private TextView progressView;
     private Button button;
+	private Button infoButton;
     private File deliverylistFile;
 
     private int progressMax = 100;
@@ -59,7 +60,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
         progress = (ProgressBar) findViewById(R.id.progress);
         progressView = (TextView) findViewById(R.id.progress_view);
         button = (Button) findViewById(R.id.button);
-
+		infoButton = (Button) findViewById(R.id.infoButton);
+		infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+				Intent intent = new Intent(this, VersionInfoActivity.class);
+				startActivity(intent);
+            }
+        });
+		
         deliverylistFile = new File(getFilesDir(), "deliveryList.json");
         button.setOnClickListener(this);
         progress.setMax(100);
@@ -315,7 +324,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         button.setEnabled(true);
         titleView.setText(R.string.activity_main_title);
     }
-
+	
+	
     private void setBar(int progress) {
         progress = progress * 100 / progressMax;
         if (progress > 100) progress = 100;
