@@ -1,24 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.ctab2labo.tweaksetuptool">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="jp.co.benesse.dcha.permission.ACCESS_SYSTEM" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.DarkActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-		<activity android:name=".VersionInfoActivity">
-		</activity>
-        <service android:name=".CheckNonMarketService" />
+        <activity android:name=".system_ui_tweak.activity.SettingActivity" />
+        <activity android:name=".app_downloader.activity.AppDownloaderActivity" />
+        <activity android:name=".VersionInfoActivity">
+        </activity>
+
+        <service android:name=".app_downloader.service.CheckNonMarketService" />
+        <service android:name=".system_ui_tweak.service.KeepService" />
+        <service android:name=".app_downloader.service.DownloadApkService" />
+
+        <receiver android:name=".reciever.UpdateReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".reciever.BootCompletedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

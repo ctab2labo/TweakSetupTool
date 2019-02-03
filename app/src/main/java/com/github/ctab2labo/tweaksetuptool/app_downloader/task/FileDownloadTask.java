@@ -1,4 +1,4 @@
-package com.github.ctab2labo.tweaksetuptool.task;
+package com.github.ctab2labo.tweaksetuptool.app_downloader.task;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -17,8 +17,8 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
     private final int BUFFER_SIZE = 1024;
     private String urlString;
     private File file;
-    private OnProgressUpdateListner updateListner;
-    private OnSuccessListner successListner;
+    private OnProgressUpdateListener updateListener;
+    private OnCompletedListener successListener;
     private long totalByte;
     private int previosInt;
     private byte[] buffer = new byte[BUFFER_SIZE];
@@ -37,6 +37,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
         try {
             URL url = new URL(urlString);
             connection = url.openConnection();
+            connection.addRequestProperty("Connection", "close");
             inputStream = connection.getInputStream();
             fileOutputStream = new FileOutputStream(file);
         } catch (Exception e) {
@@ -57,6 +58,14 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
                 fileOutputStream.write(buffer, 0, len);
                 currentByte += len;
                 updateProgress(currentByte, totalByte);
+                if (isCancelled()) {
+                    // もとに戻して終了
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                    this.file.delete();
+                    bufferedInputStream.close();
+                    return null;
+                }
             }
         } catch(IOException e) {
             Log.d(TAG, "FileDownloadTask:IOException", e);
@@ -86,31 +95,31 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
 
     @Override
     protected void onProgressUpdate(Integer... values) {
-        if (updateListner != null) {
-            updateListner.onUpdate(values[0]);
+        if (updateListener != null) {
+            updateListener.onUpdate(values[0]);
         }
     }
 
     @Override
     protected void onPostExecute(Exception aException) {
-        if (successListner != null) {
-            successListner.onSuccess(aException);
+        if (successListener != null && (! isCancelled())) {
+            successListener.onCompleted(aException);
         }
     }
 
-    public interface OnProgressUpdateListner {
+    public interface OnProgressUpdateListener {
         void onUpdate(int i);
     }
 
-    public interface OnSuccessListner {
-        void onSuccess(Exception bool);
+    public interface OnCompletedListener {
+        void onCompleted(Exception bool);
     }
 
-    public void setSuccessListner(OnSuccessListner successListner) {
-        this.successListner = successListner;
+    public void setOnCompletedListener(OnCompletedListener successListener) {
+        this.successListener = successListener;
     }
 
-    public void setUpdateListner(OnProgressUpdateListner updateListner) {
-        this.updateListner = updateListner;
+    public void setUpdateListener(OnProgressUpdateListener updateListener) {
+        this.updateListener = updateListener;
     }
 }
