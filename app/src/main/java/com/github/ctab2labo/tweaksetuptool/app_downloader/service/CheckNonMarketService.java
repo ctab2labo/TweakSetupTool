@@ -1,4 +1,4 @@
-package com.github.ctab2labo.tweaksetuptool;
+package com.github.ctab2labo.tweaksetuptool.app_downloader.service;
 
 import android.app.Service;
 import android.content.ContentResolver;
@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+
+import com.github.ctab2labo.tweaksetuptool.app_downloader.activity.AppDownloaderActivity;
 
 // 「提供元不明のアプリ」が許可されたらアクティビティに戻るサービス
 public class CheckNonMarketService extends Service {
@@ -20,7 +22,7 @@ public class CheckNonMarketService extends Service {
             super.onChange(selfChange);
             try {
                 if (Settings.Secure.getInt(resolver, stringNonMarket) == 1) {
-                    Intent intent = new Intent(CheckNonMarketService.this, MainActivity.class);
+                    Intent intent = new Intent(CheckNonMarketService.this, AppDownloaderActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     stopSelf();

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".VersionInfoActivity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,15 +18,7 @@
             android:textSize="14pt"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="@string/activity_main_title"/>
-        <ProgressBar
-            android:id="@+id/progress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="100dp"
-            android:layout_marginRight="100dp"
-            style="?android:attr/progressBarStyleHorizontal"/>
+            android:text="@string/activity_versioninfo_title"/>
         <TextView
             android:id="@+id/progress_view"
             android:layout_width="wrap_content"
@@ -41,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/activity_button"
+            android:text="@string/check_update_button_text"
             android:textSize="12pt"/>
     </LinearLayout>
 

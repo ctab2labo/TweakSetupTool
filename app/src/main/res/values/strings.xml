@@ -1,31 +1,90 @@
 <resources>
     <string name="app_name">タブレット化セットアップツール</string>
+
+    <!-- メニュー用-->
+    <string name="pre_app_download">pre_app_download</string>
+    <string name="pre_app_download_title">便利アプリのダウンロード</string>
+    <string name="pre_app_download_summary">改造に役立つアプリをここからダウンロードします。</string>
+    <string name="pre_system_ui_tweak">pre_system_ui_tweak</string>
+    <string name="pre_system_ui_tweak_title">AndroidのUIを調整</string>
+    <string name="pre_system_ui_tweak_summary">学習用に変わってしまったAndroidのUIをここでもとに戻します。</string>
+    <string name="pre_versioninfo">pre_versioninfo</string>
+    <string name="pre_versioninfo_title">@string/activity_versioninfo_title</string>
+
+    <!-- アプリダウンローダー用 ここから-->
     <string name="url_list">http://app.squidsky.ml/delivery/android/ctab2tool/deliveryList.json</string>
-
-
+    <!-- アクティビティ用 -->
+    <string name="title_downloader">便利アプリをダウンロード</string>
     <string name="ok">OK</string>
     <string name="cancel">キャンセル</string>
     <string name="activity_main_title">改造に最適なアプリをインストールします。</string>
     <string name="activity_button">インストール開始</string>
-    <string name="text_download_list">アプリリストをダウンロードしています。</string>
-    <string name="dialog_download_list">アプリリストのダウンロード</string>
+
+    <!-- ダウンロードダイアログ用 -->
+    <string name="dialog_download_list_message">アプリリストをダウンロードしています。</string>
+    <string name="dialog_download_list_title">アプリリストのダウンロード</string>
     <string name="dialog_download_list_exception">ダウンロード中にエラーが発生しました。</string>
     <string name="dialog_error_list_title">リスト処理中</string>
     <string name="dialog_error_list_message">%1$sが発生し、処理を中断しました。</string>
 
-    <string name="choose_dialog_title">インストールするアプリを選択</string>
-    <string name="text_download_app">%1$sのアプリデータをダウンロードしています。(%2$d/%3$d)</string>
+    <!-- アプリ選択フラグメント用 -->
+    <string name="choose_app_title">インストールするアプリを選択</string>
+    <string name="pre_app_packages">pre_app_packages</string>
+    <string name="button_start_download">ダウンロード開始</string>
+
+    <!-- アプリダウンロード用 -->
+    <string name="notify_download_title">アプリのダウンロード中</string>
+    <string name="text_download_app">%1$sのアプリをダウンロードしています。(%2$d/%3$d)</string>
     <string name="text_install_app">%1$sをインストールしています。(%2$d/%3$d)</string>
 
+    <!-- アプリダウンロードエラーダイアログ用 -->
+    <string name="dialog_download_app_title">アプリのダウンロード中にエラー</string>
+    <string name="dialog_download_app_message">アプリのダウンロード中にエラーが発生し、中断しました。\n%1$s</string>
+
+    <!-- アプリインストール用 -->
     <string name="toast_install_app">インストールボタンを押して、アプリをインストールしてください。</string>
     <string name="text_all_success">すべてのインストールが完了しました。</string>
 
+    <!-- アプリインストールキャンセルダイアログ用 -->
     <string name="dialog_cancel_install_title">アプリのインストール</string>
     <string name="dialog_cancel_install_message">インストールを続けますか。</string>
     <string name="dialog_cancel_positive">続行</string>
 
+    <!-- 提供元不明のアプリ用 -->
     <string name="dialog_disable_non_market_title">「提供元不明のアプリ」がオフ</string>
     <string name="dialog_disable_non_market_message">お使いの端末の「提供元不明のアプリ」がオフになっています。\nオフになっている場合はこのアプリを使用することができません。\nこのアプリを使用するには「提供元不明のアプリ」をオンにしてください。</string>
     <string name="toast_enable_non_market">「提供元不明のアプリ」のスイッチをオンにしてください。\nオンを検知したら自動でアプリに戻ります。</string>
     <string name="dialog_disable_non_market_positive">設定へ移動</string>
+    <!-- アプリダウンロード用 ここまで -->
+
+    <!-- SystemUI改造 ここから -->
+    <string name="title_ui_tweak">@string/pre_system_ui_tweak_title</string>
+    <!-- フラグメントキー用 -->
+    <string name="pre_set_dcha_state">pre_set_dcha_state</string>
+    <string name="pre_hide_navigationbar">pre_hide_navigationbar</string>
+    <string name="pre_enable_service">pre_enable_service</string>
+    <string name="pre_reset_notify_settings">reset_notify_settings</string>
+
+    <!-- 日本語文字列 -->
+    <string name="pre_str_dcha_state">学習用に最適化</string>
+    <string name="pre_sum_dcha_state">学習用のAndroidUIにします。</string>
+    <string name="pre_str_hide_navigationbar">ナビゲーションバーを非表示</string>
+    <string name="pre_sum_hide_navigationbar">ナビゲーションバーを非表示にします。</string>
+    <string name="pre_str_enable_service">常にナビゲーションバーを表示</string>
+    <string name="pre_sum_enable_service">ナビゲーションバーの非表示を検出したら再表示します。</string>>
+    <string name="pre_str_reset_notify_settings">非通知設定をもとに戻す</string>
+    <string name="pre_sum_reset_notify_settings">プリインストールアプリの非通知設定をもとに戻します。</string>
+
+    <!-- ダイアログ用 -->
+    <string name="cannot_use_dialog_title">@string/app_name</string>
+    <string name="cannot_use_dialog_message">お使いの端末はチャレンジパッド２でないと検出しました。\nこの機能は利用できません。</string>
+    <string name="finish">終了</string>
+
+    <!-- トースト用 -->
+    <string name="toast_failed">失敗しました。</string>
+    <string name="toast_error">エラーが発生しました。</string>
+    <!-- SystemUI改造 ここまで -->
+
+    <string name="activity_versioninfo_title">バージョン情報</string>
+    <string name="check_update_button_text">アップデートを確認</string>
 </resources>

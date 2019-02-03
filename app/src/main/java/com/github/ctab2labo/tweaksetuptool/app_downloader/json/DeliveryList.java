@@ -1,4 +1,4 @@
-package com.github.ctab2labo.tweaksetuptool.json;
+package com.github.ctab2labo.tweaksetuptool.app_downloader.json;
 
 import java.util.List;
 
