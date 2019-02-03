@@ -37,12 +37,14 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
         try {
             URL url = new URL(urlString);
             connection = url.openConnection();
+			connection.setRequestProperty("Connection", "close");
             inputStream = connection.getInputStream();
             fileOutputStream = new FileOutputStream(file);
         } catch (Exception e) {
             Log.e(TAG, "FileDownloadTask:Exception", e);
             return e;
         }
+		
         connection.setReadTimeout(5000);
         connection.setConnectTimeout(30000);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, BUFFER_SIZE);
