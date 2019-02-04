@@ -144,7 +144,6 @@ public class DownloadApkService extends Service {
         for (OnDownloadedListener listener : onDownloadedListeners) {
             listener.onDownloaded(index);
         }
-        stopSelf();
     }
 
     private void allCompleted(ArrayList<File> downloadedFileList) {
@@ -152,6 +151,7 @@ public class DownloadApkService extends Service {
         for (OnCompletedListener listener : onCompletedListeners) {
             listener.onCompleted(downloadedFileList);
         }
+        stopSelf();
     }
 
     private void downloadFailed(Exception e) {
