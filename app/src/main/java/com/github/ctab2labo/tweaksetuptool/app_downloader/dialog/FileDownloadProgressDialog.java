@@ -2,53 +2,35 @@ package com.github.ctab2labo.tweaksetuptool.app_downloader.dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.ctab2labo.tweaksetuptool.R;
-import com.github.ctab2labo.tweaksetuptool.app_downloader.json.DeliveryList;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.task.FileDownloadTask;
-import com.google.gson.Gson;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
-// リストをダウンロードするためのダイアログ
-public class ListDownloadProgressDialog extends AlertDialog {
+// ファイルをダウンロードするためのダイアログ
+public class FileDownloadProgressDialog extends AlertDialog {
     private TextView message;
     private ProgressBar bar;
     private TextView percent;
 
     private int progressMax = 100;
     private FileDownloadTask downloadTask;
-    private final File deliveryListFile;
 
     private OnCompletedListener onCompletedListener;
 
-    private final FileDownloadTask.OnCompletedListener onSuccessListner = new FileDownloadTask.OnCompletedListener() {
+    private final FileDownloadTask.OnCompletedListener onSuccessListener = new FileDownloadTask.OnCompletedListener() {
         @Override
         public void onCompleted(Exception e) {
-            if (e == null) {
-                try {
-                    // ファイルを読み込む
-                    FileInputStream inputStream = new FileInputStream(deliveryListFile);
-                    String listString = new String(readAll(inputStream));
-                    Gson gson = new Gson();
-                    DeliveryList deliveryList = gson.fromJson(listString, DeliveryList.class);
-                    complete(deliveryList, null);
-                } catch (Exception e2) {
-                    complete(null, e2);
-                }
-            } else {
-                complete(null, e);
-            }
+            complete(e);
         }
     };
 
-    protected ListDownloadProgressDialog(Context context) {
+    private FileDownloadProgressDialog(Context context, String downloadUrl, File writeFile) {
         super(context);
         View view = View.inflate(context,R.layout.dialog_downloader_progress_list_download,null);
 
@@ -58,17 +40,15 @@ public class ListDownloadProgressDialog extends AlertDialog {
 
         setView(view);
 
-        deliveryListFile = new File(context.getFilesDir(),"delivery_list.json");
-
         // ダウンロードタスクを初期化
-        downloadTask = new FileDownloadTask(getContext().getString(R.string.url_list), deliveryListFile);
+        downloadTask = new FileDownloadTask(downloadUrl, writeFile);
         downloadTask.setUpdateListener(new FileDownloadTask.OnProgressUpdateListener() {
             @Override
             public void onUpdate(int i) {
                 setProgress(i);
             }
         });
-        downloadTask.setOnCompletedListener(onSuccessListner);
+        downloadTask.setOnCompletedListener(onSuccessListener);
     }
 
     @Override
@@ -82,29 +62,11 @@ public class ListDownloadProgressDialog extends AlertDialog {
         this.message.setText(message);
     }
 
-    private byte[] readAll(FileInputStream stream) throws IOException {
-        ByteArrayOutputStream arrayOutput = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int len;
-        while (true) {
-            len = stream.read(buffer);
-            if (len < 0) {
-                break;
-            }
-            arrayOutput.write(buffer, 0, len);
-        }
-        return arrayOutput.toByteArray();
-    }
-
-    private void complete(DeliveryList deliveryList, Exception e) {
+    private void complete(Exception e) {
         if (onCompletedListener != null) {
-            onCompletedListener.onCompleted(deliveryList, e);
+            onCompletedListener.onCompleted(e);
         }
         this.dismiss();
-    }
-
-    private void setProgressMax(int i) {
-        progressMax = i;
     }
 
     private void setProgress(int i) {
@@ -119,21 +81,40 @@ public class ListDownloadProgressDialog extends AlertDialog {
     }
 
     public interface OnCompletedListener {
-        void onCompleted(DeliveryList deliveryList, Exception e);
+        void onCompleted(Exception e);
     }
 
     public static class Builder {
         private final Context context;
 
-        private final ListDownloadProgressDialog dialog;
+        private final FileDownloadProgressDialog dialog;
 
-        public Builder(Context context) {
+        public Builder(Context context, String downloadUrl, File writeFile) {
             this.context = context;
-            dialog = new ListDownloadProgressDialog(context);
+            dialog = new FileDownloadProgressDialog(context, downloadUrl, writeFile);
         }
 
         public Builder setOnCompletedListener(OnCompletedListener listener) {
             dialog.setOnCompletedListener(listener);
+            return this;
+        }
+        public Builder setCancelable(boolean cancelable) {
+            dialog.setCancelable(cancelable);
+            return this;
+        }
+
+        public Builder setPositiveButton(CharSequence text, DialogInterface.OnClickListener listener) {
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, text, listener);
+            return this;
+        }
+
+        public Builder setNegativeButton(CharSequence text, DialogInterface.OnClickListener listener) {
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, text, listener);
+            return this;
+        }
+
+        public Builder setOnCancelListener(DialogInterface.OnCancelListener listener) {
+            dialog.setOnCancelListener(listener);
             return this;
         }
 
@@ -157,7 +138,7 @@ public class ListDownloadProgressDialog extends AlertDialog {
             return this;
         }
 
-        public ListDownloadProgressDialog show() {
+        public FileDownloadProgressDialog show() {
             dialog.show();
             return dialog;
         }

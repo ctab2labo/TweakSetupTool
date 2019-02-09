@@ -12,25 +12,29 @@
         android:id="@+id/text_download_apk_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11pt"
+        android:layout_marginLeft="20dp"
         android:textColor="#000000" />
     <TextView
         android:id="@+id/text_download_apk_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:textSize="11pt"
+        android:layout_marginRight="20dp"
         android:textColor="#000000"
         android:text="0%"/>
     <ProgressBar
         android:id="@+id/bar_download_apk"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         style="?android:attr/progressBarStyleHorizontal" />
     <Button
         android:id="@+id/button_download_apk_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"
         android:text="@string/cancel"/>
 </LinearLayout>

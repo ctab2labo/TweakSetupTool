@@ -237,7 +237,9 @@ public class SettingFragment extends PreferenceFragment {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             SettingFragment.this.getActivity().finish();
                         }
-                    }).show();
+                    })
+                    .setCancelable(false)
+                    .show();
         }
     }
 

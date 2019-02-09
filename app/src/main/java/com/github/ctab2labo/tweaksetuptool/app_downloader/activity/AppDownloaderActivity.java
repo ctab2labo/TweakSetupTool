@@ -13,13 +13,16 @@ import android.widget.Toast;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
-import com.github.ctab2labo.tweaksetuptool.app_downloader.dialog.ListDownloadProgressDialog;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.dialog.FileDownloadProgressDialog;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.ChooseAppFragment;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.DownloadApkFragment;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.DeliveryList;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.service.CheckNonMarketService;
+import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 
 public class AppDownloaderActivity extends Activity{
@@ -30,10 +33,15 @@ public class AppDownloaderActivity extends Activity{
     private FragmentTransaction transaction;
     private String otherException;
 
+    private File deliveryListFile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_downloader);
+
+        deliveryListFile = new File(getFilesDir(), "delivery_list.json");
+
         // 一時ディレクトリの作成
         if (! Common.SAVE_DIRECTORY.exists()) {
             Common.SAVE_DIRECTORY.mkdir();
@@ -42,14 +50,19 @@ public class AppDownloaderActivity extends Activity{
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        switch (getIntent().getIntExtra(EXTRA_MODE, MODE_NONE)) {
+        int mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
+/*      開発中
+        if (DownloadApkService.isActiveService(this)) mode = MODE_SHOW_DOWNLOAD_APK_FRAGMENT;
+*/
+        switch (mode) {
             case MODE_NONE:
                 if (isNonMarketEnabled()) { // 提供元不明のアプリがオンなら
                     //　ダイアログを表示してダウンロード
-                    new ListDownloadProgressDialog.Builder(this)
+                    new FileDownloadProgressDialog.Builder(this, getString(R.string.url_list), deliveryListFile)
                             .setTitle(R.string.dialog_download_list_title)
                             .setMessage(R.string.dialog_download_list_message)
                             .setOnCompletedListener(onCompletedListener)
+                            .setCancelable(false)
                             .show();
                 } else {
                     new AlertDialog.Builder(this)
@@ -71,6 +84,7 @@ public class AppDownloaderActivity extends Activity{
                                     AppDownloaderActivity.this.finish();
                                 }
                             })
+                            .setCancelable(false)
                             .show();
                 }
                 break;
@@ -92,10 +106,23 @@ public class AppDownloaderActivity extends Activity{
         return i == 1;
     }
 
-    private final ListDownloadProgressDialog.OnCompletedListener onCompletedListener = new ListDownloadProgressDialog.OnCompletedListener() {
+    private final FileDownloadProgressDialog.OnCompletedListener onCompletedListener = new FileDownloadProgressDialog.OnCompletedListener() {
         @Override
-        public void onCompleted(DeliveryList deliveryList, Exception e) {
-            if(deliveryList != null) {// 正常にダウンロードできた場合
+        public void onCompleted(Exception e) {
+            DeliveryList deliveryList = null;
+            if (e == null) { // 正常にダウンロードできたら読み込んでみる
+                try {
+                    // ファイルを読み込む
+                    FileInputStream inputStream = new FileInputStream(deliveryListFile);
+                    String listString = new String(Common.readAll(inputStream));
+                    Gson gson = new Gson();
+                    deliveryList = gson.fromJson(listString, DeliveryList.class);
+                } catch (Exception e2) {
+                    e = e2;
+                }
+            }
+
+            if(e == null) {// 正常に読み込めた場合
                 transaction = getFragmentManager().beginTransaction();
                 ChooseAppFragment fragment = new ChooseAppFragment();
                 Bundle bundle = new Bundle();
@@ -146,140 +173,4 @@ public class AppDownloaderActivity extends Activity{
                 return super.onOptionsItemSelected(item);
         }
     }
-
-/*
-    private int tmpInt;
-    private int appsCount = -1;
-    private AppPackage[] downloadPackages;
-    private ArrayList<File> downloadedFiles;
-
-    private void downloadNextApp() {
-        // カウントアップ
-        appsCount++;
-        if (appsCount < downloadPackages.length) { // まだまだダウンロードするものがある場合
-            // 表示の更新
-            titleView.setText(getString(R.string.text_download_app, downloadPackages[appsCount].name, appsCount + 1, downloadPackages.length));
-
-            tmpInt = appsCount * 100;
-            downloadedFiles.add(new File(Common.SAVE_DIRECTORY, String.valueOf(appsCount) + ".apk"));
-            FileDownloadTask task = new FileDownloadTask(downloadPackages[appsCount].url, downloadedFiles.get(appsCount));
-            task.setUpdateListener(new FileDownloadTask.OnProgressUpdateListener() {
-                @Override
-                public void onUpdate(int i) {
-                    setBar(tmpInt + i);
-                }
-            });
-            task.setOnCompletedListener(new FileDownloadTask.OnCompletedListener() {
-                @Override
-                public void onCompleted(Exception e) {
-                    if (e == null) {
-                        downloadNextApp();
-                    } else {
-                        new AlertDialog.Builder(AppDownloaderActivity.this)
-                                .setTitle(R.string.dialog_download_list)
-                                .setMessage(getString(R.string.dialog_download_list_exception) + "\n" + e.toString())
-                                .setPositiveButton(R.string.ok, null)
-                                .show();
-                        reset();
-                    }
-                }
-            });
-            task.execute();
-        } else {
-            appsCount = -1;
-            setProgressMax(downloadedFiles.size());
-            installNextApp();
-        }
-    }
-
-    private void installNextApp() {
-        appsCount++;
-        setBar(appsCount);
-        if (appsCount < downloadedFiles.size()) { // まだまだインストールするものがある場合
-            titleView.setText(getString(R.string.text_install_app, downloadedFiles.get(appsCount).getName(), appsCount, downloadedFiles.size()));
-            showAppInstall(downloadedFiles.get(appsCount));
-        } else {
-            appsCount = -1;
-            reset();
-            deleteAllDownloadedFiles();
-            titleView.setText(R.string.text_all_success);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_APP_INSTALL) {
-            if (resultCode == RESULT_OK) {
-                installNextApp();
-            } else if (resultCode == RESULT_FIRST_USER) {
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_cancel_install_title)
-                        .setMessage(R.string.dialog_cancel_install_message)
-                        .setPositiveButton(R.string.dialog_cancel_positive, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                installNextApp();
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                reset();
-                            }
-                        })
-                        .show();
-            } else {
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_cancel_install_title)
-                        .setMessage(R.string.dialog_cancel_install_message)
-                        .setPositiveButton(R.string.dialog_cancel_positive, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                installNextApp();
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                reset();
-                            }
-                        })
-                        .show();
-            }
-        } else if (requestCode == REQUEST_CHOOSE_APP) {
-            if (resultCode == RESULT_OK) { // Step2 アプリのダウンロード
-                // 色々初期化したら始まり。
-                downloadPackages = (AppPackage[]) data.getSerializableExtra(Common.EXTRA_APP_PACKAGES);
-                setProgressMax(downloadPackages.length * 100);
-                downloadedFiles = new ArrayList<>();
-                appsCount = -1;
-                downloadNextApp();
-            } else { // でなければ終了
-                reset();
-            }
-        }
-    }
-
-    private void showAppInstall(File file) {
-        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-        intent.setData(Uri.fromFile(file));
-        intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-
-        startActivityForResult(intent, REQUEST_APP_INSTALL);
-        Toast toast = Toast.makeText(this, R.string.toast_install_app, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 150);
-        toast.show();
-    }
-
-    private void deleteAllDownloadedFiles() {
-        // ダウンロードしたファイルをすべて削除
-        for (File file : downloadedFiles) {
-            file.delete();
-            if (! file.exists()) {
-                downloadedFiles.remove(file);
-            }
-        }
-    }*/
 }

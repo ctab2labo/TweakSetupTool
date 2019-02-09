@@ -88,10 +88,10 @@ public class DownloadApkFragment extends Fragment {
         totalBar = (ProgressBar) view.findViewById(R.id.bar_download_apk);
         buttonCancel = (Button) view.findViewById(R.id.button_download_apk_cancel);
 
-        appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
         // ないとは思うが、もしリストがnullだったらサービスからリストを取得
-        if (appPackageList != null) {
+        if (getArguments().containsKey(EXTRA_APP_PACKAGE_LIST)) {
             bindFlag = FLAG_NEW_LIST;
+            appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
             DownloadApkService.startDownloadService(getActivity(), appPackageList);
             Log.d(Common.TAG, String.valueOf(DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)));
         } else {
@@ -147,6 +147,7 @@ public class DownloadApkFragment extends Fragment {
                                 getActivity().finish(); // とりあえずはフィニッシュ。後に変更あり。
                             }
                         })
+                        .setCancelable(false)
                         .show();
             }
         });

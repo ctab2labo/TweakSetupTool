@@ -47,8 +47,8 @@ public class DownloadApkService extends Service {
 
     private void createNewTask(Intent intent) {
         appPackageList = (ArrayList<AppPackage>) intent.getSerializableExtra(EXTRA_DOWNLOAD_PACKAGE);
-/* 開発中
-        // 通知を設定
+
+/*        // 通知を設定
         Notification.Builder builder = new Notification.Builder(this);
         builder.setSmallIcon(android.R.drawable.stat_sys_download);
         builder.setContentTitle(getString(R.string.notify_download_title));
