@@ -46,12 +46,8 @@ public class KeepService extends Service {
                             mDchaService.hideNavigationBar(false);
                         } catch (RemoteException e) {
                             Log.e(TAG, "Error DchaService can't hideNavigationBar.", e);
-
-                            // サービスの再同期
-                            if (! bindDchaService()) {
-                                // 失敗したら、終了
-                                stopSelf();
-                            }
+                            // 失敗したら、終了
+                            stopSelf();
                         }
                     }
                 }
@@ -84,7 +80,8 @@ public class KeepService extends Service {
             } catch (RemoteException e) {
                 Log.e(TAG, "Testing is Error.");
                 stopSelf();
-            }       }
+            }
+        }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
