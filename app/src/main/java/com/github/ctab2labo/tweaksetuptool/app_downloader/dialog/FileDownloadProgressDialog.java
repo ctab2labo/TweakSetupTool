@@ -98,21 +98,12 @@ public class FileDownloadProgressDialog extends AlertDialog {
             dialog.setOnCompletedListener(listener);
             return this;
         }
+        
         public Builder setCancelable(boolean cancelable) {
             dialog.setCancelable(cancelable);
             return this;
         }
-
-        public Builder setPositiveButton(CharSequence text, DialogInterface.OnClickListener listener) {
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, text, listener);
-            return this;
-        }
-
-        public Builder setNegativeButton(CharSequence text, DialogInterface.OnClickListener listener) {
-            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, text, listener);
-            return this;
-        }
-
+        
         public Builder setOnCancelListener(DialogInterface.OnCancelListener listener) {
             dialog.setOnCancelListener(listener);
             return this;
