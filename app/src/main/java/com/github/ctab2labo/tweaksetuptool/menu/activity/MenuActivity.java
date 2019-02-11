@@ -1,8 +1,10 @@
-package com.github.ctab2labo.tweaksetuptool;
+package com.github.ctab2labo.tweaksetuptool.menu.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
 
+import com.github.ctab2labo.tweaksetuptool.Common;
+import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.menu.fragment.MenuFragment;
 
 public class MenuActivity extends Activity {

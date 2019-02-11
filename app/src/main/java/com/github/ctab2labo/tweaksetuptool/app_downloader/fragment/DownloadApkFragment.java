@@ -89,7 +89,7 @@ public class DownloadApkFragment extends Fragment {
         buttonCancel = (Button) view.findViewById(R.id.button_download_apk_cancel);
 
         // ないとは思うが、もしリストがnullだったらサービスからリストを取得
-        if (getArguments().containsKey(EXTRA_APP_PACKAGE_LIST)) {
+        if (getArguments() != null) {
             bindFlag = FLAG_NEW_LIST;
             appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
             DownloadApkService.startDownloadService(getActivity(), appPackageList);
@@ -115,42 +115,10 @@ public class DownloadApkFragment extends Fragment {
         // テキスト表示を更新
         text.setText(getString(R.string.text_download_app,appPackagePlusList.get(count).getTitle(),count+1,appPackagePlusList.size()));
 
-        service.addOnProgressUpdateListener(new DownloadApkService.OnProgressUpdateListener() {
-            @Override
-            public void onProgressUpdate(int index, int progress) {
-                setProgressBar(index * 100 + progress);
-                AppPackagePlus appPackagePlus = appPackagePlusList.get(index);
-                appPackagePlus.setPercent(progress);
-                appPackagePlusList.set(index, appPackagePlus);
-                adapter.notifyDataSetChanged();
-            }
-        });
-        service.addOnDownloadedListener(new DownloadApkService.OnDownloadedListener() {
-            @Override
-            public void onDownloaded(int index) {
-                count++; // カウントアップ
-                if (count < appPackagePlusList.size()) { // まだまだダウンロードするものがある場合
-                    text.setText(getString(R.string.text_download_app,appPackagePlusList.get(count).getTitle(),count+1,appPackagePlusList.size()));
-                }
-            }
-        });
-        service.addOnCompletedListener(downloadCompletedListener);
-        service.addOnDownloadFailedListener(new DownloadApkService.OnDownloadFailedListener() {
-            @Override
-            public void onDownloadFailed(Exception e) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(getString(R.string.dialog_download_app_title))
-                        .setMessage(getString(R.string.dialog_download_app_message, e.toString()))
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                getActivity().finish(); // とりあえずはフィニッシュ。後に変更あり。
-                            }
-                        })
-                        .setCancelable(false)
-                        .show();
-            }
-        });
+        service.addOnProgressUpdateListener(onProgressUpdateListener);
+        service.addOnDownloadedListener(onDownloadedListener);
+        service.addOnCompletedListener(onDownloadCompletedListener);
+        service.addOnDownloadFailedListener(onDownloadFailedListener);
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -160,12 +128,50 @@ public class DownloadApkFragment extends Fragment {
         });
     }
 
-    private DownloadApkService.OnCompletedListener downloadCompletedListener = new DownloadApkService.OnCompletedListener() {
+    private DownloadApkService.OnProgressUpdateListener onProgressUpdateListener = new DownloadApkService.OnProgressUpdateListener() {
+        @Override
+        public void onProgressUpdate(int index, int progress) {
+            setProgressBar(index * 100 + progress);
+            AppPackagePlus appPackagePlus = appPackagePlusList.get(index);
+            appPackagePlus.setPercent(progress);
+            appPackagePlusList.set(index, appPackagePlus);
+            adapter.notifyDataSetChanged();
+        }
+    };
+
+    private DownloadApkService.OnDownloadedListener onDownloadedListener = new DownloadApkService.OnDownloadedListener() {
+        @Override
+        public void onDownloaded(int index) {
+            count++; // カウントアップ
+            if (count < appPackagePlusList.size()) { // まだまだダウンロードするものがある場合
+                text.setText(getString(R.string.text_download_app,appPackagePlusList.get(count).getTitle(),count+1,appPackagePlusList.size()));
+            }
+        }
+    };
+
+    private DownloadApkService.OnCompletedListener onDownloadCompletedListener = new DownloadApkService.OnCompletedListener() {
         @Override
         public void onCompleted(ArrayList<File> downloadedFiles) {
             DownloadApkFragment.this.downloadedFiles = downloadedFiles;
             count = -1;
             installNextApp();
+        }
+    };
+
+    private DownloadApkService.OnDownloadFailedListener onDownloadFailedListener = new DownloadApkService.OnDownloadFailedListener() {
+        @Override
+        public void onDownloadFailed(Exception e) {
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(getString(R.string.dialog_download_app_title))
+                    .setMessage(getString(R.string.dialog_download_app_message, e.toString()))
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            getActivity().finish(); // とりあえずはフィニッシュ。後に変更あり。
+                        }
+                    })
+                    .setCancelable(false)
+                    .show();
         }
     };
 
@@ -193,6 +199,23 @@ public class DownloadApkFragment extends Fragment {
         Toast toast = Toast.makeText(getActivity(), R.string.toast_install_app, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 150);
         toast.show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (service != null) {
+            service.removeOnProgressUpdateListener(onProgressUpdateListener);
+            service.removeOnDownloadedListener(onDownloadedListener);
+            service.removeOnCompletedListener(onDownloadCompletedListener);
+            service.removeOnDownloadFailedListener(onDownloadFailedListener);
+            getActivity().unbindService(downloadApkServiceConnection);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

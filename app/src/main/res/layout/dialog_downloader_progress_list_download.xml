@@ -12,7 +12,7 @@
         android:layout_marginBottom="20dp"
         android:textColor="#000000"
         android:textSize="7pt"
-        android:text="メッセージ" />
+        android:text="" />
     <ProgressBar
         android:id="@+id/dialog_progress_bar"
         android:layout_width="match_parent"
@@ -22,5 +22,6 @@
         android:id="@+id/dialog_progress_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="right"
         android:text="0%"/>
 </LinearLayout>

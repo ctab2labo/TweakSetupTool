@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -22,6 +24,9 @@ public class FileDownloadProgressDialog extends AlertDialog {
     private FileDownloadTask downloadTask;
 
     private OnCompletedListener onCompletedListener;
+
+    private CharSequence cancelText = "";
+    private boolean isCancellable = true;
 
     private final FileDownloadTask.OnCompletedListener onSuccessListener = new FileDownloadTask.OnCompletedListener() {
         @Override
@@ -49,17 +54,55 @@ public class FileDownloadProgressDialog extends AlertDialog {
             }
         });
         downloadTask.setOnCompletedListener(onSuccessListener);
+
+        // ボタンに必要なものを初期化
+        cancelText = context.getText(R.string.cancel);
+        this.setButton(DialogInterface.BUTTON_NEGATIVE, cancelText, new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                FileDownloadProgressDialog.this.cancel();
+            }
+        });
+        this.setOnCancelListener(new OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                cancelDownload();
+            }
+        });
     }
 
     @Override
     public void show() {
         super.show();
         downloadTask.execute();
+        Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
+        negativeButton.setVisibility(isCancellable ? View.VISIBLE : View.GONE);
+        negativeButton.setHeight(isCancellable ? ViewGroup.LayoutParams.WRAP_CONTENT : 0);
+        negativeButton.setText(cancelText);
+    }
+
+    @Override
+    public void setCancelable(boolean flag) {
+        super.setCancelable(flag);
+        isCancellable = flag;
+        Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
+        if (negativeButton != null) {
+            negativeButton.setVisibility(isCancellable ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public void setCancelButtonText(CharSequence text) {
+        cancelText = text;
+        Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
+        if (negativeButton != null) {
+            getButton(DialogInterface.BUTTON_NEGATIVE).setText(text);
+        }
     }
 
     @Override
     public void setMessage(CharSequence message) {
         this.message.setText(message);
+        this.message.setVisibility(message.equals("") ? View.GONE : View.VISIBLE);
     }
 
     private void complete(Exception e) {
@@ -67,6 +110,16 @@ public class FileDownloadProgressDialog extends AlertDialog {
             onCompletedListener.onCompleted(e);
         }
         this.dismiss();
+    }
+
+    @Override
+    public void cancel() {
+        cancelDownload();
+        super.cancel();
+    }
+
+    private void cancelDownload() {
+        downloadTask.cancel(false);
     }
 
     private void setProgress(int i) {
@@ -101,6 +154,10 @@ public class FileDownloadProgressDialog extends AlertDialog {
         
         public Builder setCancelable(boolean cancelable) {
             dialog.setCancelable(cancelable);
+            return this;
+        }
+        public Builder setCancelButtonText(CharSequence text) {
+            dialog.setCancelButtonText(text);
             return this;
         }
         

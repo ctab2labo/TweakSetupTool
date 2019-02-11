@@ -1,5 +1,6 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.fragment;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -38,8 +39,16 @@ public class ChooseAppFragment extends Fragment {
         buttonStartDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (onButtonClickListener != null) {
-                    onButtonClickListener.onButtonClick(childPreferenceFragment.getCheckedAppPackages());
+                ArrayList<AppPackage> checkedAppPackages = childPreferenceFragment.getCheckedAppPackages();
+                if (checkedAppPackages.size() == 0) {
+                    new AlertDialog.Builder(getActivity())
+                            .setMessage(R.string.error_nothing_checked)
+                            .setPositiveButton(R.string.ok, null)
+                            .show();
+                } else {
+                    if (onButtonClickListener != null) {
+                        onButtonClickListener.onButtonClick(checkedAppPackages);
+                    }
                 }
             }
         });

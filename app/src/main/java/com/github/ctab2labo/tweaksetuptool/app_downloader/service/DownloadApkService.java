@@ -1,6 +1,8 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.service;
 
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
+import com.github.ctab2labo.tweaksetuptool.R;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.activity.AppDownloaderActivity;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.task.FileDownloadTask;
 
@@ -21,6 +25,8 @@ import java.util.List;
 public class DownloadApkService extends Service {
     private final IBinder binder = new DownloadApkServiceBinder();
     public static final String EXTRA_DOWNLOAD_PACKAGE = "extra_download_package";
+    private final int NOTIFICATION_ID = 1;
+    private final int NOTIFICATION_REQUEST_CODE = 1;
 
     private ArrayList<AppPackage> appPackageList;
     private int count;
@@ -33,6 +39,9 @@ public class DownloadApkService extends Service {
     private List<OnDownloadFailedListener> onDownloadFailedListeners = new ArrayList<>();
 
     private FileDownloadTask task;
+
+    private Notification.Builder notification;
+    private int progressMax;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -48,16 +57,27 @@ public class DownloadApkService extends Service {
     private void createNewTask(Intent intent) {
         appPackageList = (ArrayList<AppPackage>) intent.getSerializableExtra(EXTRA_DOWNLOAD_PACKAGE);
 
-/*        // 通知を設定
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setSmallIcon(android.R.drawable.stat_sys_download);
-        builder.setContentTitle(getString(R.string.notify_download_title));
-        builder.setContentText("");
-*/
+        // 通知を設定
+        progressMax = appPackageList.size() * 100;
+        notification = new Notification.Builder(this);
+        notification.setSmallIcon(android.R.drawable.stat_sys_download);
+        notification.setContentTitle(getString(R.string.notify_download_title, 0));
+        notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, 1, appPackageList.size()));
+        notification.setProgress(100, 0, false);
+        Intent intent2 = new Intent(this, AppDownloaderActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_CODE, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
+        notification.setContentIntent(pendingIntent);
+        startForeground(NOTIFICATION_ID, notification.build());
 
         count = -1;
         downloadedFileList = new ArrayList<>();
         downloadNextApp();
+    }
+
+    private int getPercent(int progress) {
+        progress = progress * 100 / progressMax;
+        if (progress > 100) progress = 100;
+        return progress;
     }
 
     private void downloadNextApp() {
@@ -94,7 +114,7 @@ public class DownloadApkService extends Service {
 
     public void cancel() {
         if (task != null) {
-            task.cancel(true);
+            task.cancel(false);
         }
         stopSelf();
     }
@@ -134,6 +154,10 @@ public class DownloadApkService extends Service {
 
     private void progressUpdate(int index, int progress) {
         Log.d(Common.TAG, "DownloadApkService:progressUpdate");
+        int percent = getPercent(index * 100 + progress);
+        notification.setProgress(100, percent, false);
+        notification.setContentTitle(getString(R.string.notify_download_title, percent));
+        startForeground(NOTIFICATION_ID, notification.build());
         for (OnProgressUpdateListener listener : onProgressUpdateListeners) {
             listener.onProgressUpdate(index, progress);
         }
@@ -141,6 +165,8 @@ public class DownloadApkService extends Service {
 
     private void downloaded(int index) {
         Log.d(Common.TAG, "DownloadApkService:downloaded");
+        notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, index + 1, appPackageList.size()));
+        startForeground(NOTIFICATION_ID, notification.build());
         for (OnDownloadedListener listener : onDownloadedListeners) {
             listener.onDownloaded(index);
         }
@@ -151,6 +177,7 @@ public class DownloadApkService extends Service {
         for (OnCompletedListener listener : onCompletedListeners) {
             listener.onCompleted(downloadedFileList);
         }
+        stopForeground(true);
         stopSelf();
     }
 
@@ -159,6 +186,7 @@ public class DownloadApkService extends Service {
             Log.d(Common.TAG, "DownloadApkService:downloadFailed");
             listener.onDownloadFailed(e);
         }
+        stopForeground(true);
         stopSelf();
     }
 
@@ -196,6 +224,22 @@ public class DownloadApkService extends Service {
 
     public void addOnDownloadFailedListener(OnDownloadFailedListener onDownloadFailedListener) {
         this.onDownloadFailedListeners.add(onDownloadFailedListener);
+    }
+
+    public void removeOnProgressUpdateListener(OnProgressUpdateListener onProgressUpdateListener) {
+        this.onProgressUpdateListeners.remove(onProgressUpdateListener);
+    }
+
+    public void removeOnDownloadedListener(OnDownloadedListener onDownloadedListener) {
+        this.onDownloadedListeners.remove(onDownloadedListener);
+    }
+
+    public void removeOnCompletedListener(OnCompletedListener onCompletedListener) {
+        this.onCompletedListeners.remove(onCompletedListener);
+    }
+
+    public void removeOnDownloadFailedListener(OnDownloadFailedListener onDownloadFailedListener) {
+        this.onDownloadFailedListeners.remove(onDownloadFailedListener);
     }
 
     public class DownloadApkServiceBinder extends Binder {

@@ -19,6 +19,7 @@ import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.DownloadApkFr
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.DeliveryList;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.service.CheckNonMarketService;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.service.DownloadApkService;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -35,6 +36,10 @@ public class AppDownloaderActivity extends Activity{
 
     private File deliveryListFile;
 
+    private boolean finishedCreate = false;
+
+    private int mode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,13 +55,17 @@ public class AppDownloaderActivity extends Activity{
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        int mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
-/*      開発中
+
         if (DownloadApkService.isActiveService(this)) mode = MODE_SHOW_DOWNLOAD_APK_FRAGMENT;
-*/
+        // あとはonResumeに任せる
+    }
+
+    private void startOfMode(int mode) {
+        mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
         switch (mode) {
             case MODE_NONE:
                 if (isNonMarketEnabled()) { // 提供元不明のアプリがオンなら
+                    finishedCreate = true;
                     //　ダイアログを表示してダウンロード
                     new FileDownloadProgressDialog.Builder(this, getString(R.string.url_list), deliveryListFile)
                             .setTitle(R.string.dialog_download_list_title)
@@ -74,6 +83,7 @@ public class AppDownloaderActivity extends Activity{
                                     Intent intent = new Intent(AppDownloaderActivity.this, CheckNonMarketService.class);
                                     startService(intent);
                                     intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
                                     Toast.makeText(AppDownloaderActivity.this, R.string.toast_enable_non_market, Toast.LENGTH_SHORT).show();
                                 }
@@ -171,6 +181,14 @@ public class AppDownloaderActivity extends Activity{
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if((! finishedCreate) && mode == MODE_NONE) {
+            startOfMode(mode);
         }
     }
 }

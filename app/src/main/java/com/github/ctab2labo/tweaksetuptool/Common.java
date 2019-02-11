@@ -20,6 +20,8 @@ public final class Common {
 
   public static final String EXTRA_APP_PACKAGES = "extra_app_packages";
 
+  public static final boolean DEBUG = BuildConfig.DEBUG;
+
   public static byte[] readAll(FileInputStream stream) throws IOException {
     ByteArrayOutputStream arrayOutput = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024];

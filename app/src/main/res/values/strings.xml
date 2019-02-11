@@ -2,6 +2,7 @@
     <string name="app_name">タブレット化セットアップツール</string>
 
     <!-- メニュー用-->
+    <string name="pre_screen_menu">pre_screen_menu</string>
     <string name="pre_app_download">pre_app_download</string>
     <string name="pre_app_download_title">便利アプリのダウンロード</string>
     <string name="pre_app_download_summary">改造に役立つアプリをここからダウンロードします。</string>
@@ -10,6 +11,8 @@
     <string name="pre_system_ui_tweak_summary">学習用に変わってしまったAndroidのUIをここでもとに戻します。</string>
     <string name="pre_versioninfo">pre_versioninfo</string>
     <string name="pre_versioninfo_title">@string/activity_versioninfo_title</string>
+    <string name="pre_debug">pre_debug</string>
+    <string name="pre_debug_title">デバッグ用ボタン</string>
 
     <!-- アプリダウンローダー用 ここから-->
     <string name="url_list">http://app.squidsky.ml/delivery/android/ctab2tool/deliveryList.json</string>
@@ -31,10 +34,11 @@
     <string name="choose_app_title">インストールするアプリを選択</string>
     <string name="pre_app_packages">pre_app_packages</string>
     <string name="button_start_download">ダウンロード開始</string>
+    <string name="error_nothing_checked">選択されているアプリが一つもありません。\n何か一つをお選びください。</string>
 
     <!-- アプリダウンロード用 -->
-    <string name="notify_download_title">アプリのダウンロード中</string>
-    <string name="text_download_app">%1$sのアプリをダウンロードしています。(%2$d/%3$d)</string>
+    <string name="notify_download_title">アプリのダウンロード中 (%1$d%%)</string>
+    <string name="text_download_app">%1$sをダウンロードしています。(%2$d/%3$d)</string>
     <string name="text_install_app">%1$sをインストールしています。(%2$d/%3$d)</string>
 
     <!-- アプリダウンロードエラーダイアログ用 -->
