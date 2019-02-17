@@ -91,7 +91,7 @@ public class KeepService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        SharedPreferences sp = getSharedPreferences(Common.SHARED_PREFERNCE_KEY, MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences(Common.SHARED_PREFERENCE_KEY, MODE_PRIVATE);
         // サービスが有効ではない場合は停止。
         if(!sp.getBoolean(Common.KEY_ENABLED_KEEP_SERVICE, false)) {
             Log.d(TAG, "Disabled.");

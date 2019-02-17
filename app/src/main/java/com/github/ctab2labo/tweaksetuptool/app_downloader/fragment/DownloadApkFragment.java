@@ -1,17 +1,13 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.fragment;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +15,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.AppPackagePlus;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadListAdapter;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadedFile;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.service.DownloadApkService;
 
@@ -37,7 +33,6 @@ public class DownloadApkFragment extends Fragment {
 
     private final int FLAG_NEW_LIST = 0;
     private final int FLAG_REBIND = 1;
-    private final int REQUEST_APP_INSTALL = 1;
 
     private ListView listView;
     private TextView totalPercent;
@@ -53,6 +48,8 @@ public class DownloadApkFragment extends Fragment {
 
     private int max;
 
+    private OnDownloadCompletedListener onDownloadCompletedListener;
+
     private DownloadApkService service;
     private final ServiceConnection downloadApkServiceConnection = new ServiceConnection() {
         @Override
@@ -61,7 +58,6 @@ public class DownloadApkFragment extends Fragment {
             if (bindFlag == FLAG_REBIND) {
                 appPackageList = service.getAppPackageList();
             }
-
             createView();
         }
 
@@ -70,8 +66,6 @@ public class DownloadApkFragment extends Fragment {
             service = null;
         }
     };
-
-    private ArrayList<File> downloadedFiles;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -92,18 +86,33 @@ public class DownloadApkFragment extends Fragment {
         if (getArguments() != null) {
             bindFlag = FLAG_NEW_LIST;
             appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
-            DownloadApkService.startDownloadService(getActivity(), appPackageList);
-            Log.d(Common.TAG, String.valueOf(DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)));
+            if (appPackageList == null) {
+                Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DownloadApkFragment.this.getActivity().finish();
+                    }
+                });
+            } else {
+                DownloadApkService.startDownloadService(getActivity(), appPackageList);
+                Log.d(Common.TAG, String.valueOf(DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)));
+            }
         } else {
             bindFlag = FLAG_REBIND;
             // サービスが起動していないなどの理由でバインドできなかった場合
             if (! DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)) {
                 Log.d(Common.TAG, "DownloadApkFragment:appPackageList is null.");
-                getActivity().finish(); // とりあえずはアクティビティを終了する。後に変更あり
+                Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DownloadApkFragment.this.getActivity().finish();
+                    }
+                });
             }
         }
     }
 
+    // ビューを初期化
     private void createView() {
         count = 0;
         appPackagePlusList = listToPlusList(appPackageList);
@@ -117,7 +126,7 @@ public class DownloadApkFragment extends Fragment {
 
         service.addOnProgressUpdateListener(onProgressUpdateListener);
         service.addOnDownloadedListener(onDownloadedListener);
-        service.addOnCompletedListener(onDownloadCompletedListener);
+        service.addOnCompletedListener(onCompletedListener);
         service.addOnDownloadFailedListener(onDownloadFailedListener);
         buttonCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,12 +158,12 @@ public class DownloadApkFragment extends Fragment {
         }
     };
 
-    private DownloadApkService.OnCompletedListener onDownloadCompletedListener = new DownloadApkService.OnCompletedListener() {
+    private DownloadApkService.OnCompletedListener onCompletedListener = new DownloadApkService.OnCompletedListener() {
         @Override
-        public void onCompleted(ArrayList<File> downloadedFiles) {
-            DownloadApkFragment.this.downloadedFiles = downloadedFiles;
-            count = -1;
-            installNextApp();
+        public boolean onCompleted(ArrayList<File> downloadedFiles) {
+            ArrayList<DownloadedFile> downloadedFileList = DownloadedFile.fileWithAppPackagePlusListToDownloadedFileList(appPackagePlusList, downloadedFiles);
+            downloadCompleted(downloadedFileList);
+            return true;
         }
     };
 
@@ -175,39 +184,13 @@ public class DownloadApkFragment extends Fragment {
         }
     };
 
-    private void installNextApp() {
-        count++;
-        setProgressBar(count);
-        if (count < downloadedFiles.size()) { // まだまだインストールするものがある場合
-            text.setText(getString(R.string.text_install_app, downloadedFiles.get(count).getName(), count + 1, downloadedFiles.size()));
-            showAppInstall(downloadedFiles.get(count));
-        } else {
-            count = -1;
-            getActivity().finish(); // とりあえずは終了
-            for (File file : downloadedFiles) {
-                if (file.delete()) downloadedFiles.remove(file);
-            }
-        }
-    }
-
-    private void showAppInstall(File file) {
-        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-        intent.setData(Uri.fromFile(file));
-        intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-
-        startActivityForResult(intent, REQUEST_APP_INSTALL);
-        Toast toast = Toast.makeText(getActivity(), R.string.toast_install_app, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 150);
-        toast.show();
-    }
-
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (service != null) {
+    public void onPause() {
+        super.onPause();
+        if (service != null) { // サービスから切断
             service.removeOnProgressUpdateListener(onProgressUpdateListener);
             service.removeOnDownloadedListener(onDownloadedListener);
-            service.removeOnCompletedListener(onDownloadCompletedListener);
+            service.removeOnCompletedListener(onCompletedListener);
             service.removeOnDownloadFailedListener(onDownloadFailedListener);
             getActivity().unbindService(downloadApkServiceConnection);
         }
@@ -216,50 +199,9 @@ public class DownloadApkFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_APP_INSTALL) {
-            if (resultCode == Activity.RESULT_OK) {
-                installNextApp();
-            } else if (resultCode == Activity.RESULT_FIRST_USER) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.dialog_cancel_install_title)
-                        .setMessage(R.string.dialog_cancel_install_message)
-                        .setPositiveButton(R.string.dialog_cancel_positive, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                installNextApp();
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                getActivity().finish();
-                            }
-                        })
-                        .show();
-            } else {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.dialog_cancel_install_title)
-                        .setMessage(R.string.dialog_cancel_install_message)
-                        .setPositiveButton(R.string.dialog_cancel_positive, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                installNextApp();
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                getActivity().finish();
-                            }
-                        })
-                        .show();
-            }
+        if (DownloadApkService.isActiveService(getActivity())) { //　サービスが起動中なら再同期
+            bindFlag = FLAG_REBIND;
+            DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection);
         }
     }
 
@@ -274,6 +216,11 @@ public class DownloadApkFragment extends Fragment {
         totalPercent.setText(String.valueOf(i) + "%");
     }
 
+    /**
+     * アップパッケージリストをアップパッケージ＋リストに変換します。
+     * @param appPackageArrayList アップパッケージリスト
+     * @return 変換したプラスリスト
+     */
     private ArrayList<AppPackagePlus> listToPlusList(ArrayList<AppPackage> appPackageArrayList) {
         // パッケージオブジェクトをプラス版に変換
         ArrayList<AppPackagePlus> appPackagePlusArrayList = new ArrayList<>();
@@ -281,5 +228,19 @@ public class DownloadApkFragment extends Fragment {
             appPackagePlusArrayList.add(AppPackagePlus.toPlus(appPackage));
         }
         return appPackagePlusArrayList;
+    }
+
+    private void downloadCompleted(ArrayList<DownloadedFile> downloadedFileList) {
+        if (onDownloadCompletedListener != null) {
+            onDownloadCompletedListener.onDownloadCompleted(downloadedFileList);
+        }
+    }
+
+    public void setOnDownloadCompletedListener(OnDownloadCompletedListener onDownloadCompletedListener) {
+        this.onDownloadCompletedListener = onDownloadCompletedListener;
+    }
+
+    public interface OnDownloadCompletedListener {
+        void onDownloadCompleted(ArrayList<DownloadedFile> downloadedFileList);
     }
 }

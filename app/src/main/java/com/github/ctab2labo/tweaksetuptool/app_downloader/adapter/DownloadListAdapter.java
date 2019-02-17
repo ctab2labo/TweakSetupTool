@@ -13,12 +13,10 @@ import com.github.ctab2labo.tweaksetuptool.R;
 import java.util.ArrayList;
 
 public class DownloadListAdapter extends BaseAdapter {
-    private final Context context;
     private final LayoutInflater inflater;
-    private ArrayList<AppPackagePlus> appPackageList;
+    private ArrayList<AppPackagePlus> appPackageList = new ArrayList<>();
 
     public DownloadListAdapter(Context context) {
-        this.context = context;
         inflater = LayoutInflater.from(context);
     }
 

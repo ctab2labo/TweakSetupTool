@@ -1,6 +1,6 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.fragment;
 
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.PreferenceFragment;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 public class ChooseAppPreferenceFragment extends PreferenceFragment {
     public static final String EXTRA_APP_PACKAGE_LIST = "extra_app_package_list";
     private PreferenceScreen screen;
-    private Intent intent;
     private ArrayList<AppPackage> appPackageList;
 
     @Override
@@ -28,10 +27,15 @@ public class ChooseAppPreferenceFragment extends PreferenceFragment {
         screen = (PreferenceScreen) findPreference(getString(R.string.pre_app_packages));
 
         appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
-        // ないとは思うが、もしリストがnullだったらからのリストを作ってしのぐ。
-        if (appPackageList == null) {
+        if (appPackageList == null) { // nullだったら、ダイアログを表示してリターン
             Log.d(Common.TAG, "ChooseAppPreferenceFragment:appPackageList is null.");
-            appPackageList = new ArrayList<>();
+            Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ChooseAppPreferenceFragment.this.getActivity().finish();
+                }
+            });
+            return;
         }
 
         for (AppPackage appPackage : appPackageList) {

@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">タブレット化セットアップツール</string>
 
+    <!-- 共用 -->
+    <!-- 不明なエラーダイアログ用 -->
+    <string name="dialog_unknown_error_dialog_title">予期せぬエラー</string>
+    <string name="dialog_unknown_error_dialog_message">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:%1$s</string>
+    <string name="dialog_unknown_error_dialog_message_with">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:%1$s\n詳細:%2$s</string>
+    <string name="dialog_unknown_error_dialog_button">閉じる</string>
+
     <!-- メニュー用-->
     <string name="pre_screen_menu">pre_screen_menu</string>
     <string name="pre_app_download">pre_app_download</string>
@@ -37,7 +44,7 @@
     <string name="error_nothing_checked">選択されているアプリが一つもありません。\n何か一つをお選びください。</string>
 
     <!-- アプリダウンロード用 -->
-    <string name="notify_download_title">アプリのダウンロード中 (%1$d%%)</string>
+    <string name="notify_downloading_title">アプリのダウンロード中 (%1$d%%)</string>
     <string name="text_download_app">%1$sをダウンロードしています。(%2$d/%3$d)</string>
     <string name="text_install_app">%1$sをインストールしています。(%2$d/%3$d)</string>
 
@@ -45,7 +52,12 @@
     <string name="dialog_download_app_title">アプリのダウンロード中にエラー</string>
     <string name="dialog_download_app_message">アプリのダウンロード中にエラーが発生し、中断しました。\n%1$s</string>
 
+    <!-- アプリダウンロード完了通知用 -->
+    <string name="notify_downloaded_title">すべてのアプリのダウンロードが完了しました。</string>
+    <string name="notify_downloaded_text">この通知を押すとインストールを開始します。</string>
+
     <!-- アプリインストール用 -->
+    <string name="text_installing">%1$sをインストールしています。</string>
     <string name="toast_install_app">インストールボタンを押して、アプリをインストールしてください。</string>
     <string name="text_all_success">すべてのインストールが完了しました。</string>
 

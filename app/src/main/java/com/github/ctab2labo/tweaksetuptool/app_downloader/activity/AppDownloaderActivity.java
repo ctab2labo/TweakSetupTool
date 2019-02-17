@@ -8,14 +8,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadedFile;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.dialog.FileDownloadProgressDialog;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.ChooseAppFragment;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.DownloadApkFragment;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.fragment.InstallApkFragment;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.DeliveryList;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.service.CheckNonMarketService;
@@ -24,12 +27,15 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class AppDownloaderActivity extends Activity{
-    public static final String EXTRA_MODE = "extra_mode";
+    public static final String EXTRA_MODE = "extra_mode"; // Integer
+    public static final String EXTRA_DOWNLOADED_FILES = "downloaded_files"; // (Serialize) ArrayList<File>
     public static final int MODE_NONE = 0;
     public static final int MODE_SHOW_DOWNLOAD_APK_FRAGMENT = 1;
+    public static final int MODE_SHOW_INSTALL_APK_FRAGMENT = 2;
 
     private FragmentTransaction transaction;
     private String otherException;
@@ -55,13 +61,12 @@ public class AppDownloaderActivity extends Activity{
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-
+        mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
         if (DownloadApkService.isActiveService(this)) mode = MODE_SHOW_DOWNLOAD_APK_FRAGMENT;
         // あとはonResumeに任せる
     }
 
     private void startOfMode(int mode) {
-        mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
         switch (mode) {
             case MODE_NONE:
                 if (isNonMarketEnabled()) { // 提供元不明のアプリがオンなら
@@ -99,11 +104,35 @@ public class AppDownloaderActivity extends Activity{
                 }
                 break;
             case MODE_SHOW_DOWNLOAD_APK_FRAGMENT:
+                finishedCreate = true;
                 transaction = getFragmentManager().beginTransaction();
                 // すぐにファイルたちを表示する
                 DownloadApkFragment fragment = new DownloadApkFragment();
+                fragment.setOnDownloadCompletedListener(onDownloadCompletedListener);
                 transaction.replace(R.id.layout_downloader, fragment);
                 transaction.commit();
+                break;
+            case MODE_SHOW_INSTALL_APK_FRAGMENT:
+                finishedCreate = true;
+                Serializable downloadedFileList = getIntent().getSerializableExtra(EXTRA_DOWNLOADED_FILES);
+                if (downloadedFileList == null) { // 引数になかったらダイアログを表示して終了
+                    Log.e(Common.TAG, "AppDownloaderActivity:show_install_apk_fragment:downloadedFileList is null.");
+                    Common.DialogMakeHelper.showUnknownErrorDialog(this, "downloadedFileList is null.", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            AppDownloaderActivity.this.finish();
+                        }
+                    });
+                } else {
+                    transaction = getFragmentManager().beginTransaction();
+                    // すぐにインストーラーを表示する
+                    InstallApkFragment fragment2 = new InstallApkFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable(InstallApkFragment.BUNDLE_DOWNLOADED_FILES, downloadedFileList);
+                    fragment2.setArguments(bundle);
+                    transaction.replace(R.id.layout_downloader, fragment2);
+                    transaction.commit();
+                }
                 break;
         }
     }
@@ -165,8 +194,22 @@ public class AppDownloaderActivity extends Activity{
         public void onButtonClick(ArrayList<AppPackage> appPackageList) {
             transaction = getFragmentManager().beginTransaction();
             DownloadApkFragment fragment = new DownloadApkFragment();
+            fragment.setOnDownloadCompletedListener(onDownloadCompletedListener);
             Bundle bundle = new Bundle();
             bundle.putSerializable(DownloadApkFragment.EXTRA_APP_PACKAGE_LIST, appPackageList);
+            fragment.setArguments(bundle);
+            transaction.replace(R.id.layout_downloader, fragment);
+            transaction.commit();
+        }
+    };
+
+    private final DownloadApkFragment.OnDownloadCompletedListener onDownloadCompletedListener = new DownloadApkFragment.OnDownloadCompletedListener() {
+        @Override
+        public void onDownloadCompleted(ArrayList<DownloadedFile> downloadedFileList) {
+            transaction = getFragmentManager().beginTransaction();
+            InstallApkFragment fragment = new InstallApkFragment();
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(InstallApkFragment.BUNDLE_DOWNLOADED_FILES, downloadedFileList);
             fragment.setArguments(bundle);
             transaction.replace(R.id.layout_downloader, fragment);
             transaction.commit();
@@ -187,7 +230,7 @@ public class AppDownloaderActivity extends Activity{
     @Override
     protected void onResume() {
         super.onResume();
-        if((! finishedCreate) && mode == MODE_NONE) {
+        if(! finishedCreate) {
             startOfMode(mode);
         }
     }

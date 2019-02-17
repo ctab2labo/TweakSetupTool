@@ -3,6 +3,7 @@ package com.github.ctab2labo.tweaksetuptool.app_downloader.fragment;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -54,10 +55,15 @@ public class ChooseAppFragment extends Fragment {
         });
 
         appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
-        // ないとは思うが、もしリストがnullだったらからのリストを作ってしのぐ。
-        if (appPackageList == null) {
-            Log.d(Common.TAG, "ChooseAppFragment:appPackageList is null.");
-            appPackageList = new ArrayList<>();
+        if (appPackageList == null) { // nullだったら、ダイアログを表示してリターン
+            Log.d(Common.TAG, "ChooseAppPreferenceFragment:appPackageList is null.");
+            Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ChooseAppFragment.this.getActivity().finish();
+                }
+            });
+            return;
         }
 
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();

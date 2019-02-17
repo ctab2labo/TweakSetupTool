@@ -2,6 +2,7 @@ package com.github.ctab2labo.tweaksetuptool.app_downloader.service;
 
 import android.app.ActivityManager;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.util.Log;
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.activity.AppDownloaderActivity;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadedFile;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.task.FileDownloadTask;
 
@@ -25,8 +27,10 @@ import java.util.List;
 public class DownloadApkService extends Service {
     private final IBinder binder = new DownloadApkServiceBinder();
     public static final String EXTRA_DOWNLOAD_PACKAGE = "extra_download_package";
-    private final int NOTIFICATION_ID = 1;
-    private final int NOTIFICATION_REQUEST_CODE = 1;
+    private final int NOTIFICATION_ID_DOWNLOADING = 1;
+    private final int NOTIFICATION_ID_DOWNLOADED = 2;
+    private final int NOTIFICATION_REQUEST_DOWNLOADING = 1;
+    private final int NOTIFICATION_REQUEST_DOWNLOADED = 2;
 
     private ArrayList<AppPackage> appPackageList;
     private int count;
@@ -42,6 +46,7 @@ public class DownloadApkService extends Service {
 
     private Notification.Builder notification;
     private int progressMax;
+    private int percent;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -61,13 +66,13 @@ public class DownloadApkService extends Service {
         progressMax = appPackageList.size() * 100;
         notification = new Notification.Builder(this);
         notification.setSmallIcon(android.R.drawable.stat_sys_download);
-        notification.setContentTitle(getString(R.string.notify_download_title, 0));
+        notification.setContentTitle(getString(R.string.notify_downloading_title, 0));
         notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, 1, appPackageList.size()));
         notification.setProgress(100, 0, false);
         Intent intent2 = new Intent(this, AppDownloaderActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_CODE, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_DOWNLOADING, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
         notification.setContentIntent(pendingIntent);
-        startForeground(NOTIFICATION_ID, notification.build());
+        startForeground(NOTIFICATION_ID_DOWNLOADING, notification.build());
 
         count = -1;
         downloadedFileList = new ArrayList<>();
@@ -155,9 +160,13 @@ public class DownloadApkService extends Service {
     private void progressUpdate(int index, int progress) {
         Log.d(Common.TAG, "DownloadApkService:progressUpdate");
         int percent = getPercent(index * 100 + progress);
-        notification.setProgress(100, percent, false);
-        notification.setContentTitle(getString(R.string.notify_download_title, percent));
-        startForeground(NOTIFICATION_ID, notification.build());
+        if (percent != this.percent) {
+            this.percent = percent;
+            notification.setProgress(100, this.percent, false);
+            notification.setContentText(getString(R.string.text_download_app, appPackageList.get(index).name, index + 1, appPackageList.size()));
+            notification.setContentTitle(getString(R.string.notify_downloading_title, this.percent));
+            startForeground(NOTIFICATION_ID_DOWNLOADING, notification.build());
+        }
         for (OnProgressUpdateListener listener : onProgressUpdateListeners) {
             listener.onProgressUpdate(index, progress);
         }
@@ -165,8 +174,6 @@ public class DownloadApkService extends Service {
 
     private void downloaded(int index) {
         Log.d(Common.TAG, "DownloadApkService:downloaded");
-        notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, index + 1, appPackageList.size()));
-        startForeground(NOTIFICATION_ID, notification.build());
         for (OnDownloadedListener listener : onDownloadedListeners) {
             listener.onDownloaded(index);
         }
@@ -174,10 +181,26 @@ public class DownloadApkService extends Service {
 
     private void allCompleted(ArrayList<File> downloadedFileList) {
         Log.d(Common.TAG, "DownloadApkService:allCompleted");
+        boolean flag = false;
         for (OnCompletedListener listener : onCompletedListeners) {
-            listener.onCompleted(downloadedFileList);
+            if (listener.onCompleted(downloadedFileList)) {
+                flag = true;
+            }
         }
         stopForeground(true);
+        if (! flag) { // 指定がないなら通知をする
+            Notification.Builder builder = new Notification.Builder(this);
+            builder.setSmallIcon(R.mipmap.ic_launcher);
+            builder.setContentTitle(getString(R.string.notify_downloaded_title));
+            builder.setContentText(getString(R.string.notify_downloaded_text));
+            Intent intent = new Intent(this, AppDownloaderActivity.class);
+            intent.putExtra(AppDownloaderActivity.EXTRA_MODE, AppDownloaderActivity.MODE_SHOW_INSTALL_APK_FRAGMENT);
+            intent.putExtra(AppDownloaderActivity.EXTRA_DOWNLOADED_FILES, DownloadedFile.fileWithAppPackageListToDownloadedFileList(appPackageList, downloadedFileList));
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_DOWNLOADED, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            builder.setContentIntent(pendingIntent);
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.notify(NOTIFICATION_ID_DOWNLOADED, builder.build());
+        }
         stopSelf();
     }
 
@@ -202,7 +225,10 @@ public class DownloadApkService extends Service {
 
     // すべてのファイルをダウンロードしたときのリスナー
     public interface OnCompletedListener {
-        void onCompleted(ArrayList<File> downloadedFiles);
+        /**
+         * @return trueにすると、コンプリート通知を送信しません。
+         */
+        boolean onCompleted(ArrayList<File> downloadedFiles);
     }
 
     // エラーが出たときのリスナー

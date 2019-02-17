@@ -77,7 +77,9 @@ public class FileDownloadProgressDialog extends AlertDialog {
         downloadTask.execute();
         Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
         negativeButton.setVisibility(isCancellable ? View.VISIBLE : View.GONE);
-        negativeButton.setHeight(isCancellable ? ViewGroup.LayoutParams.WRAP_CONTENT : 0);
+        ViewGroup.LayoutParams layoutParams = negativeButton.getLayoutParams();
+        layoutParams.height = isCancellable ? ViewGroup.LayoutParams.WRAP_CONTENT : 0;
+        negativeButton.setLayoutParams(layoutParams);
         negativeButton.setText(cancelText);
     }
 
@@ -88,6 +90,9 @@ public class FileDownloadProgressDialog extends AlertDialog {
         Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
         if (negativeButton != null) {
             negativeButton.setVisibility(isCancellable ? View.VISIBLE : View.GONE);
+            ViewGroup.LayoutParams layoutParams = negativeButton.getLayoutParams();
+            layoutParams.height = isCancellable ? ViewGroup.LayoutParams.WRAP_CONTENT : 0;
+            negativeButton.setLayoutParams(layoutParams);
         }
     }
 
@@ -103,6 +108,9 @@ public class FileDownloadProgressDialog extends AlertDialog {
     public void setMessage(CharSequence message) {
         this.message.setText(message);
         this.message.setVisibility(message.equals("") ? View.GONE : View.VISIBLE);
+        ViewGroup.LayoutParams layoutParams = this.message.getLayoutParams();
+        layoutParams.height = 0;
+        this.message.setLayoutParams(layoutParams);
     }
 
     private void complete(Exception e) {
@@ -188,6 +196,10 @@ public class FileDownloadProgressDialog extends AlertDialog {
 
         public FileDownloadProgressDialog show() {
             dialog.show();
+            return dialog;
+        }
+
+        public FileDownloadProgressDialog build() {
             return dialog;
         }
     }
