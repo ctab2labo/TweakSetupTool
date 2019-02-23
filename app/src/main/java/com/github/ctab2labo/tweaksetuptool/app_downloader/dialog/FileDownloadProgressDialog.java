@@ -107,10 +107,18 @@ public class FileDownloadProgressDialog extends AlertDialog {
     @Override
     public void setMessage(CharSequence message) {
         this.message.setText(message);
-        this.message.setVisibility(message.equals("") ? View.GONE : View.VISIBLE);
-        ViewGroup.LayoutParams layoutParams = this.message.getLayoutParams();
-        layoutParams.height = 0;
-        this.message.setLayoutParams(layoutParams);
+        if (message.equals("")) { // 空なら隠す
+            this.message.setVisibility(View.GONE);
+            ViewGroup.LayoutParams layoutParams = this.message.getLayoutParams();
+            layoutParams.height = 0;
+            this.message.setLayoutParams(layoutParams);
+        } else {
+            this.message.setVisibility(View.VISIBLE);
+            ViewGroup.LayoutParams layoutParams = this.message.getLayoutParams();
+            layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            this.message.setLayoutParams(layoutParams);
+
+        }
     }
 
     private void complete(Exception e) {

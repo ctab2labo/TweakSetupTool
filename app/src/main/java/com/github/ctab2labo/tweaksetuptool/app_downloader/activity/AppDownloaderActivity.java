@@ -116,6 +116,10 @@ public class AppDownloaderActivity extends Activity{
                 transaction.commit();
                 break;
             case MODE_SHOW_INSTALL_APK_FRAGMENT:
+                // 通知を消去
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.cancel(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADED);
+
                 finishedCreate = true;
                 Serializable downloadedFileList = getIntent().getSerializableExtra(EXTRA_DOWNLOADED_FILES);
                 if (downloadedFileList == null) { // 引数になかったらダイアログを表示して終了

@@ -44,6 +44,15 @@ public class SelectListAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View view = layoutInflater.inflate(R.layout.list_view_select_app, parent, false);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppPackageCheck appPackageCheck = appPackageCheckList.get(position);
+                appPackageCheck.setChecked(! appPackageCheck.isChecked());
+                appPackageCheckList.set(position, appPackageCheck);
+                SelectListAdapter.this.notifyDataSetChanged();
+            }
+        });
         ((TextView) view.findViewById(R.id.list_view_select_app_name)).setText(appPackageCheckList.get(position).getName());
         ((TextView) view.findViewById(R.id.list_view_select_app_url)).setText(appPackageCheckList.get(position).getUrl() + "\n" + appPackageCheckList.get(position).getSummary());
         ((CheckBox) view.findViewById(R.id.list_view_select_app_check)).setChecked(appPackageCheckList.get(position).isChecked());

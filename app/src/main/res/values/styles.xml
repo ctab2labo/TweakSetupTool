@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 透明テーマ -->
+    <drawable name="transparent_param">#00000000</drawable>
+    <style name="translucentBackground" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:windowBackground">@drawable/transparent_param</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

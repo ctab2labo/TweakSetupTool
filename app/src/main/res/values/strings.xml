@@ -110,4 +110,24 @@
 
     <string name="activity_versioninfo_title">バージョン情報</string>
     <string name="check_update_button_text">アップデートを確認</string>
+
+    <!-- セルフチェック用 -->
+    <string name="self_check_url">http://app.squidsky.ml/delivery/android/ctab2tool/appInfo.json</string>
+    <string name="notify_self_check_title">新しいアプリが公開</string>
+    <string name="notify_self_check_text">新しいバージョンのアプリが公開されました。\nこの通知をタップするとダウンロードを開始します。</string>
+
+    <!-- ダイアログ用 -->
+    <string name="dialog_self_check_title">@string/app_name</string>
+    <string name="dialog_self_check_text">新しいバージョンが公開されているかチェックしています。</string>
+    <string name="dialog_self_check_exception_title">@string/dialog_self_check_title</string>
+    <string name="dialog_self_check_exception_text">チェック処理中に問題が発生しました。\n%1$s</string>
+    <string name="dialog_self_check_non_update_title">@string/dialog_self_check_title</string>
+    <string name="dialog_self_check_non_update_text">必要なアップデートはありません。</string>
+    <string name="dialog_self_check_found_update_title">@string/dialog_self_check_title</string>
+    <string name="dialog_self_check_found_update_text">新しいバージョンが公開されています。\n詳細情報:%1$s\nインストールしますか。</string>
+    <string name="dialog_self_check_download_apk_title">@string/app_name</string>
+    <string name="dialog_self_check_download_apk_text">アプリファイルをダウンロードしています。</string>
+    <string name="dialog_self_check_download_apk_exception_title">@string/dialog_self_check_download_apk_title</string>
+    <string name="dialog_self_check_download_apk_exception_text">アプリのダウンロード中に問題が発生しました。\n%1$s</string>
+    <!-- セルフチェック用 ここまで -->
 </resources>
