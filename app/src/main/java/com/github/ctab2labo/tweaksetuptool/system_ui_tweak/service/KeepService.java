@@ -6,7 +6,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -14,8 +13,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.Log;
-
-import com.github.ctab2labo.tweaksetuptool.Common;
 
 import jp.co.benesse.dcha.dchaservice.IDchaService;
 
@@ -91,14 +88,6 @@ public class KeepService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        SharedPreferences sp = getSharedPreferences(Common.SHARED_PREFERENCE_KEY, MODE_PRIVATE);
-        // サービスが有効ではない場合は停止。
-        if(!sp.getBoolean(Common.KEY_ENABLED_KEEP_SERVICE, false)) {
-            Log.d(TAG, "Disabled.");
-            stopSelf();
-            return START_STICKY;
-        }
-
         // サービスの同期
         if (! bindDchaService()) {
             // 失敗したら、終了

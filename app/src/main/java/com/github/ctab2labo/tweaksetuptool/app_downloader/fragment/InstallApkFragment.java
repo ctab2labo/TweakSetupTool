@@ -99,6 +99,10 @@ public class InstallApkFragment extends Fragment {
             installListAdapter.notifyDataSetChanged();
             text.setText(R.string.text_all_success);
 
+            for (DownloadedFile downloadedFile : downloadedFileList) { // ダウンロードしたファイルの削除
+                new File(downloadedFile.getPath()).delete();
+            }
+
             // 完了メッセージを3秒表示して終了
             new Handler().postDelayed(new Runnable() {
                 @Override

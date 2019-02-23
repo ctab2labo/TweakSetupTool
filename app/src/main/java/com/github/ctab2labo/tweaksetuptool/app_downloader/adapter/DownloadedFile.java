@@ -48,19 +48,19 @@ public class DownloadedFile implements Serializable {
 
     /**
      * ファイルとアップパッケージプラスリストをDownloadedFileListに変換します。
-     * @param appPackagePlusList アップパッケージプラスリスト
+     * @param appPackagePercentList アップパッケージプラスリスト
      * @param fileList ダウンロードしたファイル
      * @return 変換したDownloadedFileList
      */
-    public static ArrayList<DownloadedFile> fileWithAppPackagePlusListToDownloadedFileList(ArrayList<AppPackagePlus> appPackagePlusList, ArrayList<File> fileList) {
-        if (appPackagePlusList.size() != fileList.size()) return null; // サイズが一致しないならnullを返す。
+    public static ArrayList<DownloadedFile> fileWithAppPackagePlusListToDownloadedFileList(ArrayList<AppPackagePercent> appPackagePercentList, ArrayList<File> fileList) {
+        if (appPackagePercentList.size() != fileList.size()) return null; // サイズが一致しないならnullを返す。
 
         // 変換して返す
         ArrayList<DownloadedFile> downloadedFileList = new ArrayList<>();
-        int listSize = appPackagePlusList.size();
+        int listSize = appPackagePercentList.size();
         for (int i=0;i<listSize;i++) {
             DownloadedFile downloadedFile = new DownloadedFile();
-            downloadedFile.setTitle(appPackagePlusList.get(i).getTitle());
+            downloadedFile.setTitle(appPackagePercentList.get(i).getName());
             downloadedFile.setPath(fileList.get(i).getPath());
             downloadedFile.setEnabledProgress(false);
             downloadedFileList.add(downloadedFile);

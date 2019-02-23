@@ -4,17 +4,42 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/layout_fragment_app_download"
+    <ListView
+        android:id="@+id/list_view_select_app"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal" />
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right">
+        <Button
+            android:id="@+id/button_select_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_select_all"/>
+        <Button
+            android:id="@+id/button_not_select_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_not_select_all" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/button_start_donwload"
+        android:id="@+id/button_start_download"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="bottom"
         android:text="@string/button_start_download" />
+
+    <TextView
+        android:id="@+id/text_list_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginRight="10dp"
+        android:textColor="#000000"
+        android:textSize="16dp"
+        android:text="アプリリストバージョン: 000"/>
 </LinearLayout>

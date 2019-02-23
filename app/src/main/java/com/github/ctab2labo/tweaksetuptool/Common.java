@@ -16,15 +16,8 @@ public final class Common {
 
     public static final String TAG = "TweakSetupTool";
 
-    public static final String SHARED_PREFERENCE_KEY = Common.class.getPackage().getName();
-    public static final String KEY_ENABLED_KEEP_SERVICE = "enabled_keep_service";
-
-    private static final String DIRECTORY_NAME = Common.class.getPackage().getName();
-    public static final File SAVE_DIRECTORY = new File(Environment.getExternalStorageDirectory(), DIRECTORY_NAME);
-
-    public static final boolean DEBUG = BuildConfig.DEBUG;
-
-    public static final String NOTIFICATION_ID = Common.class.getPackage().getName();
+    private static final String EXTERNAL_DIRECTORY_NAME = Common.class.getPackage().getName();
+    public static final File EXTERNAL_SAVE_DIRECTORY = new File(Environment.getExternalStorageDirectory(), EXTERNAL_DIRECTORY_NAME);
 
     /**
      * インプットストリームから内容をすべて読み取り、バイト列を返します。
@@ -44,6 +37,21 @@ public final class Common {
             arrayOutput.write(buffer, 0, len);
         }
         return arrayOutput.toByteArray();
+    }
+
+    public static final class SystemUITweak {
+        private SystemUITweak() {}
+        public static final String SHARED_PREFERENCE_KEY = "SystemUITweak";
+        public static final String KEY_ENABLED_KEEP_SERVICE = "enabled_keep_service";
+    }
+
+    public static final class AppDownloader {
+        private AppDownloader() {}
+        public static final String SHARED_PREFERENCE_KEY = "AppDownloader";
+        public static final String KEY_LATEST_LIST_VERSION = "latest_list_version";
+        public static final int NOTIFICATION_ID_DOWNLOADING = 1;
+        public static final int NOTIFICATION_ID_DOWNLOADED = 2;
+        public static final int NOTIFICATION_ID_LIST_UPDATE = 3;
     }
 
     // 様々なダイアログを楽に表示します。

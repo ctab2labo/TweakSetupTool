@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
-import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.AppPackagePlus;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.AppPackagePercent;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadListAdapter;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DownloadedFile;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppPackage;
@@ -41,7 +41,7 @@ public class DownloadApkFragment extends Fragment {
     private Button buttonCancel;
 
     private ArrayList<AppPackage> appPackageList;
-    private ArrayList<AppPackagePlus> appPackagePlusList;
+    private ArrayList<AppPackagePercent> appPackagePercentList;
     private DownloadListAdapter adapter;
     private int bindFlag;
     private int count;
@@ -115,14 +115,14 @@ public class DownloadApkFragment extends Fragment {
     // ビューを初期化
     private void createView() {
         count = 0;
-        appPackagePlusList = listToPlusList(appPackageList);
+        appPackagePercentList = listToPercentList(appPackageList);
         adapter = new DownloadListAdapter(getActivity());
-        adapter.setAppPackageList(appPackagePlusList);
+        adapter.setAppPackageList(appPackagePercentList);
         listView.setAdapter(adapter);
         setProgressMax(appPackageList.size() * 100);
 
         // テキスト表示を更新
-        text.setText(getString(R.string.text_download_app,appPackagePlusList.get(count).getTitle(),count+1,appPackagePlusList.size()));
+        text.setText(getString(R.string.text_download_app, appPackagePercentList.get(count).getName(),count+1, appPackagePercentList.size()));
 
         service.addOnProgressUpdateListener(onProgressUpdateListener);
         service.addOnDownloadedListener(onDownloadedListener);
@@ -141,9 +141,9 @@ public class DownloadApkFragment extends Fragment {
         @Override
         public void onProgressUpdate(int index, int progress) {
             setProgressBar(index * 100 + progress);
-            AppPackagePlus appPackagePlus = appPackagePlusList.get(index);
-            appPackagePlus.setPercent(progress);
-            appPackagePlusList.set(index, appPackagePlus);
+            AppPackagePercent appPackagePercent = appPackagePercentList.get(index);
+            appPackagePercent.setPercent(progress);
+            appPackagePercentList.set(index, appPackagePercent);
             adapter.notifyDataSetChanged();
         }
     };
@@ -152,8 +152,8 @@ public class DownloadApkFragment extends Fragment {
         @Override
         public void onDownloaded(int index) {
             count++; // カウントアップ
-            if (count < appPackagePlusList.size()) { // まだまだダウンロードするものがある場合
-                text.setText(getString(R.string.text_download_app,appPackagePlusList.get(count).getTitle(),count+1,appPackagePlusList.size()));
+            if (count < appPackagePercentList.size()) { // まだまだダウンロードするものがある場合
+                text.setText(getString(R.string.text_download_app, appPackagePercentList.get(count).getName(),count+1, appPackagePercentList.size()));
             }
         }
     };
@@ -161,7 +161,7 @@ public class DownloadApkFragment extends Fragment {
     private DownloadApkService.OnCompletedListener onCompletedListener = new DownloadApkService.OnCompletedListener() {
         @Override
         public boolean onCompleted(ArrayList<File> downloadedFiles) {
-            ArrayList<DownloadedFile> downloadedFileList = DownloadedFile.fileWithAppPackagePlusListToDownloadedFileList(appPackagePlusList, downloadedFiles);
+            ArrayList<DownloadedFile> downloadedFileList = DownloadedFile.fileWithAppPackagePlusListToDownloadedFileList(appPackagePercentList, downloadedFiles);
             downloadCompleted(downloadedFileList);
             return true;
         }
@@ -221,13 +221,13 @@ public class DownloadApkFragment extends Fragment {
      * @param appPackageArrayList アップパッケージリスト
      * @return 変換したプラスリスト
      */
-    private ArrayList<AppPackagePlus> listToPlusList(ArrayList<AppPackage> appPackageArrayList) {
+    private ArrayList<AppPackagePercent> listToPercentList(ArrayList<AppPackage> appPackageArrayList) {
         // パッケージオブジェクトをプラス版に変換
-        ArrayList<AppPackagePlus> appPackagePlusArrayList = new ArrayList<>();
+        ArrayList<AppPackagePercent> appPackagePercentArrayList = new ArrayList<>();
         for (AppPackage appPackage : appPackageArrayList) {
-            appPackagePlusArrayList.add(AppPackagePlus.toPlus(appPackage));
+            appPackagePercentArrayList.add(new AppPackagePercent(appPackage));
         }
-        return appPackagePlusArrayList;
+        return appPackagePercentArrayList;
     }
 
     private void downloadCompleted(ArrayList<DownloadedFile> downloadedFileList) {

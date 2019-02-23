@@ -42,6 +42,9 @@
     <string name="pre_app_packages">pre_app_packages</string>
     <string name="button_start_download">ダウンロード開始</string>
     <string name="error_nothing_checked">選択されているアプリが一つもありません。\n何か一つをお選びください。</string>
+    <string name="button_select_all">すべて選択</string>
+    <string name="button_not_select_all">すべて選択しない</string>
+    <string name="text_list_version">アプリリストバージョン: %1$d</string>
 
     <!-- アプリダウンロード用 -->
     <string name="notify_downloading_title">アプリのダウンロード中 (%1$d%%)</string>
@@ -71,6 +74,10 @@
     <string name="dialog_disable_non_market_message">お使いの端末の「提供元不明のアプリ」がオフになっています。\nオフになっている場合はこのアプリを使用することができません。\nこのアプリを使用するには「提供元不明のアプリ」をオンにしてください。</string>
     <string name="toast_enable_non_market">「提供元不明のアプリ」のスイッチをオンにしてください。\nオンを検知したら自動でアプリに戻ります。</string>
     <string name="dialog_disable_non_market_positive">設定へ移動</string>
+
+    <!-- 自動確認通知用 -->
+    <string name="notify_check_list_update_title">新しいアプリリストが公開されました。</string>
+    <string name="notify_check_list_update_text">この通知を押して、リストを確認できます。</string>
     <!-- アプリダウンロード用 ここまで -->
 
     <!-- SystemUI改造 ここから -->

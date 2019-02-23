@@ -29,6 +29,7 @@
         <service android:name=".app_downloader.service.CheckNonMarketService" />
         <service android:name=".system_ui_tweak.service.KeepService" />
         <service android:name=".app_downloader.service.DownloadApkService" />
+        <service android:name=".app_downloader.service.UpdateCheckService" />
 
         <receiver android:name=".reciever.UpdateReceiver">
             <intent-filter>

@@ -112,7 +112,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
     }
 
     public interface OnCompletedListener {
-        void onCompleted(Exception bool);
+        void onCompleted(Exception e);
     }
 
     public void setOnCompletedListener(OnCompletedListener successListener) {

@@ -14,8 +14,8 @@ public class MenuActivity extends Activity {
         setContentView(R.layout.activity_menu);
 
         // 一時ディレクトリの作成
-        if (! Common.SAVE_DIRECTORY.exists()) {
-            Common.SAVE_DIRECTORY.mkdir();
+        if (! Common.EXTERNAL_SAVE_DIRECTORY.exists()) {
+            Common.EXTERNAL_SAVE_DIRECTORY.mkdir();
         }
 
         getFragmentManager().beginTransaction()

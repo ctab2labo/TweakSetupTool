@@ -27,10 +27,8 @@ import java.util.List;
 public class DownloadApkService extends Service {
     private final IBinder binder = new DownloadApkServiceBinder();
     public static final String EXTRA_DOWNLOAD_PACKAGE = "extra_download_package";
-    private final int NOTIFICATION_ID_DOWNLOADING = 1;
-    private final int NOTIFICATION_ID_DOWNLOADED = 2;
-    private final int NOTIFICATION_REQUEST_DOWNLOADING = 1;
-    private final int NOTIFICATION_REQUEST_DOWNLOADED = 2;
+    private final int INTENT_REQUEST_DOWNLOADING = 1;
+    private final int INTENT_REQUEST_DOWNLOADED = 2;
 
     private ArrayList<AppPackage> appPackageList;
     private int count;
@@ -70,9 +68,9 @@ public class DownloadApkService extends Service {
         notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, 1, appPackageList.size()));
         notification.setProgress(100, 0, false);
         Intent intent2 = new Intent(this, AppDownloaderActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_DOWNLOADING, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADING, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
         notification.setContentIntent(pendingIntent);
-        startForeground(NOTIFICATION_ID_DOWNLOADING, notification.build());
+        startForeground(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADING, notification.build());
 
         count = -1;
         downloadedFileList = new ArrayList<>();
@@ -90,18 +88,18 @@ public class DownloadApkService extends Service {
 
         if (count < appPackageList.size()) { // まだまだダウンロードするものがあるなら
             // ファイルリストにファイルを新規作成
-            downloadedFileList.add(new File(Common.SAVE_DIRECTORY, String.valueOf(count) + ".apk"));
+            downloadedFileList.add(new File(Common.EXTERNAL_SAVE_DIRECTORY, String.valueOf(count) + ".apk"));
 
             // タスクを初期化
             task = new FileDownloadTask(appPackageList.get(count).url, downloadedFileList.get(count));
             task.setOnCompletedListener(new FileDownloadTask.OnCompletedListener() {
                 @Override
-                public void onCompleted(Exception bool) {
-                    if (bool == null) {
+                public void onCompleted(Exception e) {
+                    if (e == null) {
                         downloadNextApp();
                         downloaded(count);
                     } else {
-                        downloadFailed(bool);
+                        downloadFailed(e);
                     }
                 }
             });
@@ -165,7 +163,7 @@ public class DownloadApkService extends Service {
             notification.setProgress(100, this.percent, false);
             notification.setContentText(getString(R.string.text_download_app, appPackageList.get(index).name, index + 1, appPackageList.size()));
             notification.setContentTitle(getString(R.string.notify_downloading_title, this.percent));
-            startForeground(NOTIFICATION_ID_DOWNLOADING, notification.build());
+            startForeground(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADING, notification.build());
         }
         for (OnProgressUpdateListener listener : onProgressUpdateListeners) {
             listener.onProgressUpdate(index, progress);
@@ -196,10 +194,10 @@ public class DownloadApkService extends Service {
             Intent intent = new Intent(this, AppDownloaderActivity.class);
             intent.putExtra(AppDownloaderActivity.EXTRA_MODE, AppDownloaderActivity.MODE_SHOW_INSTALL_APK_FRAGMENT);
             intent.putExtra(AppDownloaderActivity.EXTRA_DOWNLOADED_FILES, DownloadedFile.fileWithAppPackageListToDownloadedFileList(appPackageList, downloadedFileList));
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, NOTIFICATION_REQUEST_DOWNLOADED, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADED, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             builder.setContentIntent(pendingIntent);
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            manager.notify(NOTIFICATION_ID_DOWNLOADED, builder.build());
+            manager.notify(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADED, builder.build());
         }
         stopSelf();
     }
@@ -208,6 +206,10 @@ public class DownloadApkService extends Service {
         for (OnDownloadFailedListener listener : onDownloadFailedListeners) {
             Log.d(Common.TAG, "DownloadApkService:downloadFailed");
             listener.onDownloadFailed(e);
+        }
+
+        for(File file : downloadedFileList) { // ダウンロードしたファイルの削除
+            file.delete();
         }
         stopForeground(true);
         stopSelf();

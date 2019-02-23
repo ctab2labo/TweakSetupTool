@@ -152,8 +152,8 @@ public class SettingFragment extends PreferenceFragment {
         try {
             switchDchaState.setChecked(Settings.System.getInt(resolver, dchaStateString) != 0);
             switchHideBar.setChecked(Settings.System.getInt(resolver, hideNavigationBarString) == 1);
-            SharedPreferences sp = getActivity().getSharedPreferences(Common.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
-            switchEnableService.setChecked(sp.getBoolean(Common.KEY_ENABLED_KEEP_SERVICE, false));
+            SharedPreferences sp = getActivity().getSharedPreferences(Common.SystemUITweak.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
+            switchEnableService.setChecked(sp.getBoolean(Common.SystemUITweak.KEY_ENABLED_KEEP_SERVICE, false));
             canUseThisApp = true;
 
             // オブサーバーを有効化
@@ -196,9 +196,9 @@ public class SettingFragment extends PreferenceFragment {
             switchEnableService.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {// とりあえず、値を保存
-                    SharedPreferences sp = getActivity().getSharedPreferences(Common.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
+                    SharedPreferences sp = getActivity().getSharedPreferences(Common.SystemUITweak.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
                     SharedPreferences.Editor spe = sp.edit();
-                    spe.putBoolean(Common.KEY_ENABLED_KEEP_SERVICE, (boolean)o);
+                    spe.putBoolean(Common.SystemUITweak.KEY_ENABLED_KEEP_SERVICE, (boolean)o);
                     spe.apply();
                     if ((boolean) o) {// オンなら起動
                         ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
@@ -273,8 +273,8 @@ public class SettingFragment extends PreferenceFragment {
         } catch (Settings.SettingNotFoundException e) {
             Log.e(TAG, "onResume:SettingNotFoundException", e);
         }
-        SharedPreferences sp = getActivity().getSharedPreferences(Common.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
-        switchEnableService.setChecked(sp.getBoolean(Common.KEY_ENABLED_KEEP_SERVICE, false));
+        SharedPreferences sp = getActivity().getSharedPreferences(Common.SystemUITweak.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
+        switchEnableService.setChecked(sp.getBoolean(Common.SystemUITweak.KEY_ENABLED_KEEP_SERVICE, false));
     }
 
     private boolean bindDchaService(int flag) {

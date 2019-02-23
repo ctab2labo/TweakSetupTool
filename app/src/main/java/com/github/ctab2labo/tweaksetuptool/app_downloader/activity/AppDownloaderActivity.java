@@ -4,8 +4,11 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -54,8 +57,8 @@ public class AppDownloaderActivity extends Activity{
         deliveryListFile = new File(getFilesDir(), "delivery_list.json");
 
         // 一時ディレクトリの作成
-        if (! Common.SAVE_DIRECTORY.exists()) {
-            Common.SAVE_DIRECTORY.mkdir();
+        if (! Common.EXTERNAL_SAVE_DIRECTORY.exists()) {
+            Common.EXTERNAL_SAVE_DIRECTORY.mkdir();
         }
         setTitle(R.string.title_downloader);
         ActionBar actionBar = getActionBar();
@@ -162,9 +165,16 @@ public class AppDownloaderActivity extends Activity{
             }
 
             if(e == null) {// 正常に読み込めた場合
+                // まず、リストバージョンを保存
+                SharedPreferences sp  = getSharedPreferences(Common.AppDownloader.SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE);
+                SharedPreferences.Editor spe = sp.edit();
+                spe.putInt(Common.AppDownloader.KEY_LATEST_LIST_VERSION, deliveryList.list_version);
+                spe.apply();
+
                 transaction = getFragmentManager().beginTransaction();
                 ChooseAppFragment fragment = new ChooseAppFragment();
                 Bundle bundle = new Bundle();
+                bundle.putInt(ChooseAppFragment.EXTRA_LIST_VERSION, deliveryList.list_version);
                 bundle.putSerializable(ChooseAppFragment.EXTRA_APP_PACKAGE_LIST, (ArrayList<AppPackage>)deliveryList.app_list);
                 fragment.setArguments(bundle);
                 fragment.setOnButtonClickListener(onButtonClickListener);
@@ -233,5 +243,9 @@ public class AppDownloaderActivity extends Activity{
         if(! finishedCreate) {
             startOfMode(mode);
         }
+
+        // 通知を消去
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(Common.AppDownloader.NOTIFICATION_ID_LIST_UPDATE);
     }
 }

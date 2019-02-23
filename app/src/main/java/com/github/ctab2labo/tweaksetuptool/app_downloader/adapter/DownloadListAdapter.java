@@ -14,13 +14,13 @@ import java.util.ArrayList;
 
 public class DownloadListAdapter extends BaseAdapter {
     private final LayoutInflater inflater;
-    private ArrayList<AppPackagePlus> appPackageList = new ArrayList<>();
+    private ArrayList<AppPackagePercent> appPackageList = new ArrayList<>();
 
     public DownloadListAdapter(Context context) {
         inflater = LayoutInflater.from(context);
     }
 
-    public void setAppPackageList(ArrayList<AppPackagePlus> appPackageList) {
+    public void setAppPackageList(ArrayList<AppPackagePercent> appPackageList) {
         this.appPackageList = appPackageList;
     }
 
@@ -42,7 +42,7 @@ public class DownloadListAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         view = inflater.inflate(R.layout.list_view_download_apk, viewGroup, false);
-        ((TextView) view.findViewById(R.id.list_view_download_apk_title)).setText(appPackageList.get(i).getTitle());
+        ((TextView) view.findViewById(R.id.list_view_download_apk_title)).setText(appPackageList.get(i).getName());
         ((TextView) view.findViewById(R.id.list_view_download_apk_url)).setText(appPackageList.get(i).getUrl());
         ((TextView) view.findViewById(R.id.list_view_download_apk_percent)).setText(String.valueOf(appPackageList.get(i).getPercent()) + "%");
         ((ProgressBar) view.findViewById(R.id.list_view_download_apk_bar)).setProgress(appPackageList.get(i).getPercent());
