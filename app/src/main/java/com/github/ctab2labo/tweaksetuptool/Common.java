@@ -57,7 +57,7 @@ public final class Common {
     public static final class SelfUpdate {
         private SelfUpdate() {}
         public static final int NOTIFICATION_ID_SELF_UPDATE = 4;
-        public static final int PUBLIC_APP_VERSION = 200 * 2;
+        public static final int PUBLIC_APP_VERSION = 200;
     }
 
     // 様々なダイアログを楽に表示します。
