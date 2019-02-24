@@ -31,6 +31,11 @@ public class SelfUpdateActivity extends Activity {
         jsonFile = new File(getFilesDir(), "appInfo.json");
         updateApk = new File(Common.EXTERNAL_SAVE_DIRECTORY, "selfUpdate.apk");
 
+        // 一時ディレクトリの作成
+        if (! Common.EXTERNAL_SAVE_DIRECTORY.exists()) {
+            Common.EXTERNAL_SAVE_DIRECTORY.mkdir();
+        }
+
         // 通知を消去
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(Common.SelfUpdate.NOTIFICATION_ID_SELF_UPDATE);

@@ -50,7 +50,7 @@ public class InstallApkFragment extends Fragment {
         if (getArguments() != null) {
             downloadedFileList = (ArrayList<DownloadedFile>) getArguments().getSerializable(BUNDLE_DOWNLOADED_FILES);
             if (downloadedFileList == null) {
-                Log.d(Common.TAG, "InstallApkFragment:downloadedFileList is null.");
+                Log.e(Common.TAG, "InstallApkFragment:downloadedFileList is null.");
                 Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "downloadedFileList is null.", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

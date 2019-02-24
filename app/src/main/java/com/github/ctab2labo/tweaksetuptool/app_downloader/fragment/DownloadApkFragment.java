@@ -31,9 +31,6 @@ import java.util.ArrayList;
 public class DownloadApkFragment extends Fragment {
     public static final String EXTRA_APP_PACKAGE_LIST = "extra_app_package_list";
 
-    private final int FLAG_NEW_LIST = 0;
-    private final int FLAG_REBIND = 1;
-
     private ListView listView;
     private TextView totalPercent;
     private TextView text;
@@ -43,7 +40,6 @@ public class DownloadApkFragment extends Fragment {
     private ArrayList<AppPackage> appPackageList;
     private ArrayList<AppPackagePercent> appPackagePercentList;
     private DownloadListAdapter adapter;
-    private int bindFlag;
     private int count;
 
     private int max;
@@ -51,13 +47,14 @@ public class DownloadApkFragment extends Fragment {
     private OnDownloadCompletedListener onDownloadCompletedListener;
 
     private DownloadApkService service;
+
+    private boolean isLoadedPercent = false;
     private final ServiceConnection downloadApkServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             service = ((DownloadApkService.DownloadApkServiceBinder) iBinder).getService();
-            if (bindFlag == FLAG_REBIND) {
-                appPackageList = service.getAppPackageList();
-            }
+            // アプリ側からアプリリストを取得し、ビューを作成
+            appPackageList = service.getAppPackageList();
             createView();
         }
 
@@ -84,32 +81,14 @@ public class DownloadApkFragment extends Fragment {
 
         // ないとは思うが、もしリストがnullだったらサービスからリストを取得
         if (getArguments() != null) {
-            bindFlag = FLAG_NEW_LIST;
             appPackageList = (ArrayList<AppPackage>) getArguments().getSerializable(EXTRA_APP_PACKAGE_LIST);
-            if (appPackageList == null) {
-                Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DownloadApkFragment.this.getActivity().finish();
-                    }
-                });
-            } else {
+            if (appPackageList != null) {
                 DownloadApkService.startDownloadService(getActivity(), appPackageList);
-                Log.d(Common.TAG, String.valueOf(DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)));
-            }
-        } else {
-            bindFlag = FLAG_REBIND;
-            // サービスが起動していないなどの理由でバインドできなかった場合
-            if (! DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)) {
-                Log.d(Common.TAG, "DownloadApkFragment:appPackageList is null.");
-                Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DownloadApkFragment.this.getActivity().finish();
-                    }
-                });
+                Log.e(Common.TAG, String.valueOf(DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)));
             }
         }
+
+        // あとはonResumeに任せる
     }
 
     // ビューを初期化
@@ -140,6 +119,7 @@ public class DownloadApkFragment extends Fragment {
     private DownloadApkService.OnProgressUpdateListener onProgressUpdateListener = new DownloadApkService.OnProgressUpdateListener() {
         @Override
         public void onProgressUpdate(int index, int progress) {
+            loadPercent(index);
             setProgressBar(index * 100 + progress);
             AppPackagePercent appPackagePercent = appPackagePercentList.get(index);
             appPackagePercent.setPercent(progress);
@@ -151,7 +131,13 @@ public class DownloadApkFragment extends Fragment {
     private DownloadApkService.OnDownloadedListener onDownloadedListener = new DownloadApkService.OnDownloadedListener() {
         @Override
         public void onDownloaded(int index) {
-            count++; // カウントアップ
+            count = index + 1; // カウントアップ
+            for (int i=0;i<index;i++) {
+                AppPackagePercent appPackagePercent = appPackagePercentList.get(i);
+                appPackagePercent.setPercent(100);
+                appPackagePercentList.set(i, appPackagePercent);
+                adapter.notifyDataSetChanged();
+            }
             if (count < appPackagePercentList.size()) { // まだまだダウンロードするものがある場合
                 text.setText(getString(R.string.text_download_app, appPackagePercentList.get(count).getName(),count+1, appPackagePercentList.size()));
             }
@@ -199,9 +185,16 @@ public class DownloadApkFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (DownloadApkService.isActiveService(getActivity())) { //　サービスが起動中なら再同期
-            bindFlag = FLAG_REBIND;
-            DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection);
+
+        // サービスが起動していないなどの理由でバインドできなかった場合
+        if (! DownloadApkService.bindDownloadService(getActivity(), downloadApkServiceConnection)) {
+            Log.e(Common.TAG, "DownloadApkFragment:could't bind service.");
+            Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "could't bind service." + (appPackageList == null ? "\nappPackageList is null." : ""), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    DownloadApkFragment.this.getActivity().finish();
+                }
+            });
         }
     }
 
@@ -214,6 +207,19 @@ public class DownloadApkFragment extends Fragment {
         if (i > 100) i = 100;
         totalBar.setProgress(i);
         totalPercent.setText(String.valueOf(i) + "%");
+    }
+
+    // アクティビティへ戻ってきたときに、ダウンロード中以外のファイルがすべて0%に戻っている不具合の一時しのぎのためのメソッド。のちに削除予定
+    private void loadPercent(int index) {
+        if (! isLoadedPercent) {
+            for (int i=0;i<index;i++) {
+                AppPackagePercent appPackagePercent = appPackagePercentList.get(i);
+                appPackagePercent.setPercent(100);
+                appPackagePercentList.set(i, appPackagePercent);
+                adapter.notifyDataSetChanged();
+            }
+            isLoadedPercent = true;
+        }
     }
 
     /**

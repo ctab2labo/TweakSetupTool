@@ -67,7 +67,6 @@ public class KeepService extends Service {
                 resolver.unregisterContentObserver(observer);
                 observer = null;
             }
-            Log.d(TAG, "Binded DchaService.");
             mDchaService = IDchaService.Stub.asInterface(iBinder);
             try {
                 // 同期したら、試しにテスト
@@ -108,7 +107,6 @@ public class KeepService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "Stopping Service...");
         if (observer != null) {
             resolver.unregisterContentObserver(observer);
             observer = null;
@@ -131,7 +129,6 @@ public class KeepService extends Service {
             unbindService(dchaServiceConnetion);
             mDchaService = null;
         }
-        Log.d(TAG, "Binding DchaService.");
         Intent intent = new Intent("jp.co.benesse.dcha.dchaservice.DchaService");
         intent.setPackage("jp.co.benesse.dcha.dchaservice");
         return bindService(intent, dchaServiceConnetion, Context.BIND_AUTO_CREATE);

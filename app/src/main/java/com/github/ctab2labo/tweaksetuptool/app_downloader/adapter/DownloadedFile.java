@@ -84,7 +84,7 @@ public class DownloadedFile implements Serializable {
             DownloadedFile downloadedFile = new DownloadedFile();
             downloadedFile.setTitle(appPackageList.get(i).name);
             downloadedFile.setPath(fileList.get(i).getPath());
-            downloadedFile.setEnabledProgress(true);
+            downloadedFile.setEnabledProgress(false);
             downloadedFileList.add(downloadedFile);
         }
         return downloadedFileList;

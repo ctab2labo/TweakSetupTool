@@ -99,7 +99,6 @@ public class ChooseAppFragment extends Fragment {
         if (args != null) { // 取得できたら
             appPackageList = (ArrayList<AppPackage>) args.getSerializable(EXTRA_APP_PACKAGE_LIST);
             if (appPackageList == null) { // nullだったら、ダイアログを表示してリターン
-                Log.d(Common.TAG, "ChooseAppPreferenceFragment:appPackageList is null.");
                 Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "appPackageList is null.", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -120,7 +119,7 @@ public class ChooseAppFragment extends Fragment {
                 textListVersion.setText(getString(R.string.text_list_version, listVersion));
             }
         } else { //　取得できなかった場合はダイアログを表示して終了
-            Log.d(Common.TAG, "ChooseAppPreferenceFragment:getArguments() is null.");
+            Log.e(Common.TAG, "ChooseAppPreferenceFragment:getArguments() is null.");
             Common.DialogMakeHelper.showUnknownErrorDialog(getActivity(), "getArguments() is null.", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

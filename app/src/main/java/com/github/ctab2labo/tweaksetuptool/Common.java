@@ -80,9 +80,9 @@ public final class Common {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setTitle(R.string.dialog_unknown_error_dialog_title);
             if (addMessage == null) {
-                builder.setMessage(context.getString(R.string.dialog_unknown_error_dialog_message, ThreadUtils.calledFrom()));
+                builder.setMessage(context.getString(R.string.dialog_unknown_error_dialog_message, ThreadUtils.calleedCallerFrom()));
             } else {
-                builder.setMessage(context.getString(R.string.dialog_unknown_error_dialog_message_with, ThreadUtils.calledFrom(), addMessage));
+                builder.setMessage(context.getString(R.string.dialog_unknown_error_dialog_message_with, ThreadUtils.calleedCallerFrom(), addMessage));
             }
             builder.setPositiveButton(R.string.dialog_unknown_error_dialog_button, onClickListener);
             builder.setCancelable(false);
@@ -108,8 +108,18 @@ public final class Common {
          *
          * @return クラス名.メソッド名(ファイル名:行番号)
          */
-        public static String calledFrom() {
-            StackTraceElement ste = Thread.currentThread().getStackTrace()[2];
+        public static String callerFrom() {
+            StackTraceElement ste = Thread.currentThread().getStackTrace()[3];
+            return ste.toString();
+        }
+
+        /**
+         * 呼び出したメソッドの内の読み出し元のクラス名とメソッド名、行番号をjava.lang.Object.main(Object.java:2)のように表示
+         *
+         * @return クラス名.メソッド名(ファイル名:行番号)
+         */
+        public static String calleedCallerFrom() {
+            StackTraceElement ste = Thread.currentThread().getStackTrace()[4];
             return ste.toString();
         }
     }

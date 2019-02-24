@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.github.ctab2labo.tweaksetuptool.Common;
 import com.github.ctab2labo.tweaksetuptool.R;
@@ -68,7 +67,7 @@ public class DownloadApkService extends Service {
         notification.setContentText(getString(R.string.text_download_app, appPackageList.get(0).name, 1, appPackageList.size()));
         notification.setProgress(100, 0, false);
         Intent intent2 = new Intent(this, AppDownloaderActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADING, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADING, intent2, PendingIntent.FLAG_CANCEL_CURRENT);
         notification.setContentIntent(pendingIntent);
         startForeground(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADING, notification.build());
 
@@ -135,7 +134,7 @@ public class DownloadApkService extends Service {
     public static boolean bindDownloadService(Context context, ServiceConnection serviceConnection) {
         if (isActiveService(context)) {
             Intent intent = new Intent(context, DownloadApkService.class);
-            return context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+            return context.bindService(intent, serviceConnection, 0);
         } else {
             return false;
         }
@@ -156,7 +155,6 @@ public class DownloadApkService extends Service {
     }
 
     private void progressUpdate(int index, int progress) {
-        Log.d(Common.TAG, "DownloadApkService:progressUpdate");
         int percent = getPercent(index * 100 + progress);
         if (percent != this.percent) {
             this.percent = percent;
@@ -171,14 +169,12 @@ public class DownloadApkService extends Service {
     }
 
     private void downloaded(int index) {
-        Log.d(Common.TAG, "DownloadApkService:downloaded");
         for (OnDownloadedListener listener : onDownloadedListeners) {
             listener.onDownloaded(index);
         }
     }
 
     private void allCompleted(ArrayList<File> downloadedFileList) {
-        Log.d(Common.TAG, "DownloadApkService:allCompleted");
         boolean flag = false;
         for (OnCompletedListener listener : onCompletedListeners) {
             if (listener.onCompleted(downloadedFileList)) {
@@ -194,7 +190,7 @@ public class DownloadApkService extends Service {
             Intent intent = new Intent(this, AppDownloaderActivity.class);
             intent.putExtra(AppDownloaderActivity.EXTRA_MODE, AppDownloaderActivity.MODE_SHOW_INSTALL_APK_FRAGMENT);
             intent.putExtra(AppDownloaderActivity.EXTRA_DOWNLOADED_FILES, DownloadedFile.fileWithAppPackageListToDownloadedFileList(appPackageList, downloadedFileList));
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADED, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, INTENT_REQUEST_DOWNLOADED, intent, PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setContentIntent(pendingIntent);
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             manager.notify(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADED, builder.build());
@@ -204,7 +200,6 @@ public class DownloadApkService extends Service {
 
     private void downloadFailed(Exception e) {
         for (OnDownloadFailedListener listener : onDownloadFailedListeners) {
-            Log.d(Common.TAG, "DownloadApkService:downloadFailed");
             listener.onDownloadFailed(e);
         }
 

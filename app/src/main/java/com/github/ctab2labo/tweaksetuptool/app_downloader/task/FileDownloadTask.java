@@ -68,7 +68,7 @@ public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
                 }
             }
         } catch(IOException e) {
-            Log.d(TAG, "FileDownloadTask:IOException", e);
+            Log.e(TAG, "FileDownloadTask:IOException", e);
             return e;
         }
 

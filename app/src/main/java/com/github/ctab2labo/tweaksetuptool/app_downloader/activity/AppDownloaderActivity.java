@@ -3,6 +3,7 @@ package com.github.ctab2labo.tweaksetuptool.app_downloader.activity;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -49,6 +50,8 @@ public class AppDownloaderActivity extends Activity{
 
     private int mode;
 
+    private Fragment nowFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,11 +68,25 @@ public class AppDownloaderActivity extends Activity{
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         mode = getIntent().getIntExtra(EXTRA_MODE, MODE_NONE);
-        if (DownloadApkService.isActiveService(this)) mode = MODE_SHOW_DOWNLOAD_APK_FRAGMENT;
-        // あとはonResumeに任せる
+
+        startOfMode(mode,getIntent());
     }
 
-    private void startOfMode(int mode) {
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        mode = intent.getIntExtra(EXTRA_MODE, MODE_NONE);
+
+        startOfMode(mode, intent);
+    }
+
+    private void startOfMode(int mode, Intent intent) {
+        if (mode == MODE_NONE && DownloadApkService.isActiveService(this)) {
+            // サービスが起動中ならそれを優先
+            mode = MODE_SHOW_DOWNLOAD_APK_FRAGMENT;
+            this.mode = mode;
+        }
         switch (mode) {
             case MODE_NONE:
                 if (isNonMarketEnabled()) { // 提供元不明のアプリがオンなら
@@ -112,8 +129,7 @@ public class AppDownloaderActivity extends Activity{
                 // すぐにファイルたちを表示する
                 DownloadApkFragment fragment = new DownloadApkFragment();
                 fragment.setOnDownloadCompletedListener(onDownloadCompletedListener);
-                transaction.replace(R.id.layout_downloader, fragment);
-                transaction.commit();
+                commitFragment(fragment);
                 break;
             case MODE_SHOW_INSTALL_APK_FRAGMENT:
                 // 通知を消去
@@ -121,7 +137,7 @@ public class AppDownloaderActivity extends Activity{
                 nm.cancel(Common.AppDownloader.NOTIFICATION_ID_DOWNLOADED);
 
                 finishedCreate = true;
-                Serializable downloadedFileList = getIntent().getSerializableExtra(EXTRA_DOWNLOADED_FILES);
+                Serializable downloadedFileList = intent.getSerializableExtra(EXTRA_DOWNLOADED_FILES);
                 if (downloadedFileList == null) { // 引数になかったらダイアログを表示して終了
                     Log.e(Common.TAG, "AppDownloaderActivity:show_install_apk_fragment:downloadedFileList is null.");
                     Common.DialogMakeHelper.showUnknownErrorDialog(this, "downloadedFileList is null.", new DialogInterface.OnClickListener() {
@@ -137,8 +153,7 @@ public class AppDownloaderActivity extends Activity{
                     Bundle bundle = new Bundle();
                     bundle.putSerializable(InstallApkFragment.BUNDLE_DOWNLOADED_FILES, downloadedFileList);
                     fragment2.setArguments(bundle);
-                    transaction.replace(R.id.layout_downloader, fragment2);
-                    transaction.commit();
+                    commitFragment(fragment2);
                 }
                 break;
         }
@@ -182,8 +197,7 @@ public class AppDownloaderActivity extends Activity{
                 bundle.putSerializable(ChooseAppFragment.EXTRA_APP_PACKAGE_LIST, (ArrayList<AppPackage>)deliveryList.app_list);
                 fragment.setArguments(bundle);
                 fragment.setOnButtonClickListener(onButtonClickListener);
-                transaction.replace(R.id.layout_downloader, fragment);
-                transaction.commit();
+                commitFragment(fragment);
             } else { // 失敗した場合
                 otherException = e.toString(); //get exception string
                 if(otherException.equals("java.net.ProtocolException: unexpected end of stream")) {
@@ -212,21 +226,18 @@ public class AppDownloaderActivity extends Activity{
             Bundle bundle = new Bundle();
             bundle.putSerializable(DownloadApkFragment.EXTRA_APP_PACKAGE_LIST, appPackageList);
             fragment.setArguments(bundle);
-            transaction.replace(R.id.layout_downloader, fragment);
-            transaction.commit();
+            commitFragment(fragment);
         }
     };
 
     private final DownloadApkFragment.OnDownloadCompletedListener onDownloadCompletedListener = new DownloadApkFragment.OnDownloadCompletedListener() {
         @Override
         public void onDownloadCompleted(ArrayList<DownloadedFile> downloadedFileList) {
-            transaction = getFragmentManager().beginTransaction();
             InstallApkFragment fragment = new InstallApkFragment();
             Bundle bundle = new Bundle();
             bundle.putSerializable(InstallApkFragment.BUNDLE_DOWNLOADED_FILES, downloadedFileList);
             fragment.setArguments(bundle);
-            transaction.replace(R.id.layout_downloader, fragment);
-            transaction.commit();
+            commitFragment(fragment);
         }
     };
 
@@ -244,12 +255,26 @@ public class AppDownloaderActivity extends Activity{
     @Override
     protected void onResume() {
         super.onResume();
-        if(! finishedCreate) {
-            startOfMode(mode);
-        }
 
         // 通知を消去
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(Common.AppDownloader.NOTIFICATION_ID_LIST_UPDATE);
+    }
+
+    private void commitFragment(Fragment fragment) {
+        clearFragment(); // 先にフラグメントをクリア
+        nowFragment = fragment;
+        transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.layout_downloader, fragment);
+        transaction.commit();
+    }
+
+    private void clearFragment() { // フラグメントのクリア
+        if (nowFragment != null) {
+            transaction = getFragmentManager().beginTransaction();
+            transaction.remove(nowFragment);
+            transaction.commit();
+            nowFragment = null;
+        }
     }
 }

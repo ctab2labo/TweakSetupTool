@@ -4,8 +4,8 @@
     <!-- 共用 -->
     <!-- 不明なエラーダイアログ用 -->
     <string name="dialog_unknown_error_dialog_title">予期せぬエラー</string>
-    <string name="dialog_unknown_error_dialog_message">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:%1$s</string>
-    <string name="dialog_unknown_error_dialog_message_with">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:%1$s\n詳細:%2$s</string>
+    <string name="dialog_unknown_error_dialog_message">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:\n%1$s</string>
+    <string name="dialog_unknown_error_dialog_message_with">予期せぬエラーが発生しました。\nお手数ですが開発者に報告をお願いします。\nエラーメッセージ:\nトレース:\n%1$s\n詳細:%2$s</string>
     <string name="dialog_unknown_error_dialog_button">閉じる</string>
 
     <!-- メニュー用-->
