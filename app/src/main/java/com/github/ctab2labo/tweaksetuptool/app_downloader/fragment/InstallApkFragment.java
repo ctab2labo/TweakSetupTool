@@ -34,6 +34,8 @@ public class InstallApkFragment extends Fragment {
     private ListView listView;
     private TextView text;
 
+    private boolean isActivityStopped = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -107,7 +109,9 @@ public class InstallApkFragment extends Fragment {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    InstallApkFragment.this.getActivity().finish();
+                    if (! isActivityStopped) {
+                        InstallApkFragment.this.getActivity().finish();
+                    }
                 }
             }, 3000);
         }
@@ -167,5 +171,17 @@ public class InstallApkFragment extends Fragment {
                         .show();
             }
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        isActivityStopped = true;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        isActivityStopped = false;
     }
 }
