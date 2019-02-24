@@ -41,7 +41,6 @@ public class SelfUpdateCheckService extends Service {
                 try { // よみこむ
                     FileInputStream inputStream = new FileInputStream(jsonFile);
                     String jsonString = new String(Common.readAll(inputStream));
-                    Log.d("TweakSetupTool", "SelfUpdateCheckService:json is " + jsonString);
                     appInfo = AppInfo.fromJson(jsonString);
                 } catch (Exception e1) {
                     e = e1;
