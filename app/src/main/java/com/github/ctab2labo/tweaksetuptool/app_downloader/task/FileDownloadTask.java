@@ -1,125 +1,172 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.task;
 
-import android.os.AsyncTask;
-import android.util.Log;
+import android.app.DownloadManager;
+import android.content.Context;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Handler;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 
-import static com.github.ctab2labo.tweaksetuptool.Common.TAG;
+public class FileDownloadTask {
+    public static final int PROGRESS_MAX = 100;
+    private final Context context;
+    private final Uri downloadUri;
+    private final File downloadedFile;
+    private final CharSequence title;
+    private final CharSequence description;
+    private final DownloadManager downloadManager;
 
-public class FileDownloadTask extends AsyncTask<Void, Integer, Exception> {
-    private final int BUFFER_SIZE = 1024;
-    private String urlString;
-    private File file;
-    private OnProgressUpdateListener updateListener;
-    private OnCompletedListener successListener;
-    private long totalByte;
-    private int previosInt;
-    private byte[] buffer = new byte[BUFFER_SIZE];
-
-    public FileDownloadTask(String url, File file) {
-        urlString = url;
-        this.file = file;
+    private OnProgressUpdateListener onProgressUpdateListener;
+    private OnFinishedListener onFinishedListener;
+    private long id;
+    private Uri contentId;
+    public FileDownloadTask(Context context, Uri uri, File path) {
+        this(context, uri, path, null, null);
     }
 
-    @Override
-    protected Exception doInBackground(Void... obj) {
-        // URLをもとに初期化
-        URLConnection connection;
-        FileOutputStream fileOutputStream;
-        InputStream inputStream;
-        try {
-            URL url = new URL(urlString);
-            connection = url.openConnection();
-            connection.addRequestProperty("Connection", "close");
-            inputStream = connection.getInputStream();
-            fileOutputStream = new FileOutputStream(file);
-        } catch (Exception e) {
-            Log.e(TAG, "FileDownloadTask:Exception", e);
-            return e;
-        }
-        connection.setReadTimeout(5000);
-        connection.setConnectTimeout(30000);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, BUFFER_SIZE);
-        totalByte = connection.getContentLength();
-        long currentByte = 0;
-        previosInt = 0;
+    public FileDownloadTask(Context context, Uri uri, File path, CharSequence title, CharSequence description) {
+        this.context = context;
+        this.downloadUri = uri;
+        this.downloadedFile = path;
+        this.title = title;
+        this.description = description;
+        this.downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        if (this.downloadManager == null) throw new RuntimeException("DownloadManager returned null");
+    }
 
-        // 読み取れたデータだけ書き込む。
-        try {
-            int len;
-            while((len = bufferedInputStream.read(buffer)) >= 0){
-                fileOutputStream.write(buffer, 0, len);
-                currentByte += len;
-                updateProgress(currentByte, totalByte);
-                if (isCancelled()) {
-                    // もとに戻して終了
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
-                    this.file.delete();
-                    bufferedInputStream.close();
-                    return null;
-                }
+    /**
+     * ダウンロードを開始します。
+     */
+    public void start() {
+        DownloadManager.Request request = new DownloadManager.Request(downloadUri);
+        request.setDestinationUri(Uri.fromFile(downloadedFile));
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+        if (title != null) {
+            request.setTitle(title);
+        }
+        if (description != null) {
+            request.setDescription(description);
+        }
+
+        // idを取得してダウンロード開始
+        long id = downloadManager.enqueue(request);
+        setDownloadId(id);
+    }
+
+    public void cancel() {
+        downloadManager.remove(id);
+    }
+
+    public void remove() {
+        downloadManager.remove(id);
+    }
+
+    /**
+     * ダウンロードの変化が通知されます。
+     */
+    protected void onEvent() {
+        queryStatus();
+    }
+
+    /**
+     * ダウンロードの状態を確認します。
+     */
+    private void queryStatus() {
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById(id);
+
+        Cursor cursor = downloadManager.query(query);
+        if (cursor.moveToFirst()) {
+            int statusIndex  = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+            int status = cursor.getInt(statusIndex);
+            switch (status) {
+                case DownloadManager.STATUS_RUNNING: // 進行中ならどれくらい進んでいるかを通知
+                    int sizeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                    int downloadedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                    long size = cursor.getInt(sizeIndex);
+                    long downloaded = cursor.getInt(downloadedIndex);
+                    int progress = 0;
+                    if (size != -1) progress = (int) (downloaded * PROGRESS_MAX / size);
+                    onProgressUpdate(progress);
+                    break;
+                case DownloadManager.STATUS_SUCCESSFUL:
+                    onSuccessful();
+                    break;
+                case DownloadManager.STATUS_FAILED:
+                    onFailed();
+                    break;
             }
-        } catch(IOException e) {
-            Log.e(TAG, "FileDownloadTask:IOException", e);
-            return e;
-        }
-
-        try {
-            fileOutputStream.flush();
-            fileOutputStream.close();
-            bufferedInputStream.close();
-        } catch(IOException e) {
-            Log.e(TAG, "FileDownloadTask:IOException", e);
-            return e;
-        }
-        return null;
-    }
-
-    private void updateProgress(long i, long i2) {
-        // 100分率を計算。変更があれば、パブリッシュ
-        i = i * 100 / i2;
-        i = i > 100 ? 100 : i;
-        if (previosInt != i) {
-            previosInt = (int) i;
-            publishProgress(previosInt);
         }
     }
 
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        if (updateListener != null) {
-            updateListener.onUpdate(values[0]);
+    private void setDownloadId(long id) {
+        this.id = id;
+        this.contentId = Uri.parse("content://downloads/my_downloads/" + id);
+
+        // ついでにオブザーバーも設定
+        context.getContentResolver().registerContentObserver(Uri.parse("content://downloads/my_downloads"), true, new DownloadObserver(this));
+    }
+
+    /**
+     * リスナーに進行状況を通知
+     */
+    protected void onProgressUpdate(int progress) {
+        if (onProgressUpdateListener != null) {
+            onProgressUpdateListener.onProgressUpdate(downloadUri, progress);
         }
     }
 
-    @Override
-    protected void onPostExecute(Exception aException) {
-        if (successListener != null && (! isCancelled())) {
-            successListener.onCompleted(aException);
+    /**
+     * リスナーに失敗したことを通知
+     */
+    protected void onFailed() {
+        if (onFinishedListener != null) {
+            onFinishedListener.onFailed(downloadUri);
+        }
+    }
+
+    /**
+     * リスナーに成功したことを通知
+     */
+    protected void onSuccessful() {
+        if (onFinishedListener != null) {
+            onFinishedListener.onSuccessful(downloadUri, downloadedFile);
+        }
+    }
+
+    public void setOnFinishedListener(OnFinishedListener onFinishedListener) {
+        this.onFinishedListener = onFinishedListener;
+    }
+
+    public void setOnProgressUpdateListener(OnProgressUpdateListener onProgressUpdateListener) {
+        this.onProgressUpdateListener = onProgressUpdateListener;
+    }
+
+    private static class DownloadObserver extends ContentObserver {
+        private final FileDownloadTask task;
+
+        private DownloadObserver(FileDownloadTask task) {
+            super(new Handler());
+            this.task = task;
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            super.onChange(selfChange);
+            task.onEvent();
         }
     }
 
     public interface OnProgressUpdateListener {
-        void onUpdate(int i);
+        void onProgressUpdate(Uri downloadUri, int progress);
     }
 
-    public interface OnCompletedListener {
-        void onCompleted(Exception e);
-    }
+    public interface OnFinishedListener {
+        void onSuccessful(Uri downloadUri, File downloadedFile);
 
-    public void setOnCompletedListener(OnCompletedListener successListener) {
-        this.successListener = successListener;
-    }
-
-    public void setUpdateListener(OnProgressUpdateListener updateListener) {
-        this.updateListener = updateListener;
+        void onFailed(Uri downloadUri);
     }
 }

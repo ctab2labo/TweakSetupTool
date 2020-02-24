@@ -2,10 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.github.ctab2labo.tweaksetuptool">
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="jp.co.benesse.dcha.permission.ACCESS_SYSTEM" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -13,6 +14,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.DarkActionBar"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".app_downloader.AppInstallActivity"></activity>
         <activity android:name=".menu.activity.MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,19 +22,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".system_ui_tweak.activity.SettingActivity"/>
-        <activity android:name=".app_downloader.activity.AppDownloaderActivity"
+        <activity
+            android:name=".app_downloader.AppDownloaderActivity"
             android:launchMode="singleTop" />
-        <activity android:name=".VersionInfoActivity">
-        </activity>
-        <activity android:name=".self_update.activity.SelfUpdateActivity"
+        <activity android:name=".VersionInfoActivity" />
+        <activity
+            android:name=".self_update.activity.SelfUpdateActivity"
             android:launchMode="singleTask"
-            android:theme="@style/translucentBackground"/>
+            android:theme="@style/translucentBackground" />
 
-        <service android:name=".app_downloader.service.CheckNonMarketService" />
-        <service android:name=".system_ui_tweak.service.KeepService" />
-        <service android:name=".app_downloader.service.DownloadApkService" />
-        <service android:name=".app_downloader.service.UpdateCheckService" />
         <service android:name=".self_update.service.SelfUpdateCheckService" />
 
         <receiver android:name=".reciever.UpdateReceiver">

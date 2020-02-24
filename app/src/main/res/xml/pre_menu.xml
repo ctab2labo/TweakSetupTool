@@ -6,11 +6,6 @@
         android:title="@string/pre_app_download_title"
         android:summary="@string/pre_app_download_summary"
         />
-    <Preference
-        android:key="@string/pre_system_ui_tweak"
-        android:title="@string/pre_system_ui_tweak_title"
-        android:summary="@string/pre_system_ui_tweak_summary"
-        />
 
     <Preference
         android:key="@string/pre_versioninfo"

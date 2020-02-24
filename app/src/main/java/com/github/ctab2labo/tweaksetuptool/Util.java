@@ -4,20 +4,17 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Environment;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public final class Common {
-    private Common() {}
+public final class Util {
+    private Util() {}
 
     public static final String TAG = "TweakSetupTool";
-
-    private static final String EXTERNAL_DIRECTORY_NAME = Common.class.getPackage().getName();
-    public static final File EXTERNAL_SAVE_DIRECTORY = new File(Environment.getExternalStorageDirectory(), EXTERNAL_DIRECTORY_NAME);
 
     /**
      * インプットストリームから内容をすべて読み取り、バイト列を返します。
@@ -39,10 +36,33 @@ public final class Common {
         return arrayOutput.toByteArray();
     }
 
-    public static final class SystemUITweak {
-        private SystemUITweak() {}
-        public static final String SHARED_PREFERENCE_KEY = "SystemUITweak";
-        public static final String KEY_ENABLED_KEEP_SERVICE = "enabled_keep_service";
+    public static File getExternalTempDir(Context context) {
+        return context.getExternalCacheDir();
+    }
+
+    public static void closeSilently(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {/* 無視 */}
+        }
+    }
+
+    /**
+     * ダブらないように一時ファイルを作成します。
+     * @param extension ピリオドなしの拡張子
+     * @return ファイル名
+     */
+    public static File createTempFile(Context context, String extension) {
+        File tempDir = getExternalTempDir(context);
+        extension = "." + extension;
+        int i = 0;
+        File tempFile = new File(tempDir, i + extension);
+        while(tempFile.exists()) {
+            i++;
+            tempFile = new File(tempDir, i + extension);
+        }
+        return tempFile;
     }
 
     public static final class AppDownloader {
