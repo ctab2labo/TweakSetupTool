@@ -20,13 +20,22 @@
             android:gravity="center"
             android:text="@string/activity_versioninfo_title"/>
         <TextView
-            android:id="@+id/progress_view"
+            android:text="@string/text_developer"
+            android:textColor="#000000"
+            android:textSize="14pt"
+            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="100dp"
-            android:layout_gravity="right"
-            android:text="0%"
-            android:textSize="10pt"/>
+            />
+        <TextView
+            android:id="@+id/text_discord"
+            android:textColor="#0000FF"
+            android:fontFeatureSettings=""
+            android:textSize="10pt"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
         <Button
             android:id="@+id/button"
             android:layout_marginTop="60dp"

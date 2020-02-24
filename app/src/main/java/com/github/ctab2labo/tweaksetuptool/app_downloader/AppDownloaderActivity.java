@@ -83,6 +83,7 @@ public class AppDownloaderActivity extends Activity {
         setContentView(R.layout.activity_app_downloader);
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        setTitle(R.string.choose_app_title);
 
         mainList = (ListView) findViewById(R.id.main_list);
         startButton = (Button) findViewById(R.id.start_button);

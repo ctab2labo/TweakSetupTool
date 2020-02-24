@@ -3,12 +3,12 @@ package com.github.ctab2labo.tweaksetuptool;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-
-import com.github.ctab2labo.tweaksetuptool.self_update.activity.SelfUpdateActivity;
+import android.widget.TextView;
 
 /*
  * 開発メモ：
@@ -19,7 +19,7 @@ import com.github.ctab2labo.tweaksetuptool.self_update.activity.SelfUpdateActivi
  */
 
 public class VersionInfoActivity extends Activity {
-    private Button button;
+    private TextView discordLink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +30,15 @@ public class VersionInfoActivity extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
+        discordLink = (TextView) findViewById(R.id.text_discord);
+        // HTML形式のリッチなテキストで表示
+        discordLink.setText(Html.fromHtml(getString(R.string.text_discord)));
+        discordLink.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(VersionInfoActivity.this, SelfUpdateActivity.class);
+            public void onClick(View view) {
+                Uri urlDiscord = Uri.parse(getString(R.string.url_discord));
+                Intent intent = new Intent(Intent.ACTION_VIEW, urlDiscord);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         });

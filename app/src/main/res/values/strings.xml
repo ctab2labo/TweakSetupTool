@@ -30,15 +30,12 @@
     <!-- ダウンロードダイアログ用 -->
     <string name="dialog_download_list_message">アプリリストをダウンロードしています。</string>
     <string name="dialog_download_list_title">アプリリストのダウンロード</string>
-    <string name="dialog_download_list_exception">ダウンロード中にエラーが発生しました。</string>
     <string name="dialog_error_list_title">リスト処理中</string>
-    <string name="dialog_error_list_message">%1$sが発生し、処理を中断しました。</string>
+    <string name="dialog_error_list_message">ダウンロード中にエラーが発生しました。</string>
 
     <!-- アプリ選択フラグメント用 -->
     <string name="choose_app_title">インストールするアプリを選択</string>
-    <string name="pre_app_packages">pre_app_packages</string>
     <string name="button_start_download">ダウンロード開始</string>
-    <string name="error_nothing_checked">選択されているアプリが一つもありません。\n何か一つをお選びください。</string>
     <string name="button_select_all">すべて選択</string>
     <string name="button_not_select_all">すべて選択しない</string>
     <string name="text_list_version">アプリリストバージョン: %1$d</string>
@@ -53,24 +50,6 @@
     <string name="progress_failed_install">インストールに失敗しました。</string>
     <string name="progress_install_successful">インストールが完了しました。</string>
 
-    <!-- アプリダウンロードエラーダイアログ用 -->
-    <string name="dialog_download_app_title">アプリのダウンロード中にエラー</string>
-    <string name="dialog_download_app_message">アプリのダウンロード中にエラーが発生し、中断しました。\n%1$s</string>
-
-    <!-- アプリダウンロード完了通知用 -->
-    <string name="notify_downloaded_title">すべてのアプリのダウンロードが完了しました。</string>
-    <string name="notify_downloaded_text">この通知を押すとインストールを開始します。</string>
-
-    <!-- アプリインストール用 -->
-    <string name="text_installing">%1$sをインストールしています。</string>
-    <string name="toast_install_app">インストールボタンを押して、アプリをインストールしてください。</string>
-    <string name="text_all_success">すべてのインストールが完了しました。</string>
-
-    <!-- アプリインストールキャンセルダイアログ用 -->
-    <string name="dialog_cancel_install_title">アプリのインストール</string>
-    <string name="dialog_cancel_install_message">インストールを続けますか。</string>
-    <string name="dialog_cancel_positive">続行</string>
-
     <!-- 提供元不明のアプリ用 -->
     <string name="dialog_disable_non_market_title">「提供元不明のアプリ」がオフ</string>
     <string name="dialog_disable_non_market_message">お使いの端末の「提供元不明のアプリ」がオフになっています。\nオフになっている場合はこのアプリを使用することができません。\nこのアプリを使用するには「提供元不明のアプリ」をオンにしてください。</string>
@@ -81,7 +60,12 @@
     <string name="notify_check_list_update_title">新しいアプリリストが公開されました。</string>
     <string name="notify_check_list_update_text">この通知を押して、リストを確認できます。</string>
     <!-- アプリダウンロード用 ここまで -->
+
     <string name="activity_versioninfo_title">バージョン情報</string>
+    <string name="text_developer">開発者: CyberRex shiose</string>
+    <string name="text_discord">&lt;font color="#0000ff"&gt;&lt;u&gt;チャレンジパッド改造のDiscordに参加&lt;/u&gt;&lt;/font&gt;</string>
+    <string name="url_discord">https://discord.gg/xTNm9ke</string>
+
     <string name="check_update_button_text">アップデートを確認</string>
 
     <!-- セルフチェック用 -->
