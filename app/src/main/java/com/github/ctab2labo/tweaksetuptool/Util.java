@@ -48,6 +48,10 @@ public final class Util {
         }
     }
 
+    public static void postAsync(Runnable runnable) {
+        new Thread(runnable).start();
+    }
+
     /**
      * ダブらないように一時ファイルを作成します。
      * @param extension ピリオドなしの拡張子

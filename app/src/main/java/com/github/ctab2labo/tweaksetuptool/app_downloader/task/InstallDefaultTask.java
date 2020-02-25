@@ -10,6 +10,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 
 import com.github.ctab2labo.tweaksetuptool.BuildConfig;
@@ -28,11 +29,13 @@ public class InstallDefaultTask extends InstallBaseTask {
     private final PackageInstaller mPackageInstaller;
     private File installFile;
     private BroadcastReceiver installationResultReceiver;
+    private final Handler handler;
 
     public InstallDefaultTask(Context context, File installFile) {
         super(installFile);
         this.context = context;
         this.installFile = installFile;
+        this.handler = new Handler();
 
         mPackageInstaller = context.getPackageManager().getPackageInstaller();
         installationResultReceiver = new InstallationResultReceiver(this);
@@ -40,21 +43,34 @@ public class InstallDefaultTask extends InstallBaseTask {
 
     @Override
     public void install() {
-        PackageInstaller.Session session = null;
         // ブロードキャストレシーバーを登録することで、通知を受け取れるようにする。
         registerReceiver();
-        try {
-            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-            params.setInstallLocation(PackageInfo.INSTALL_LOCATION_AUTO);
-            sessionId = mPackageInstaller.createSession(params);
-            session = mPackageInstaller.openSession(sessionId);
-            writeFileToSession(installFile, session);
-            session.commit(getIntentSender(sessionId));
-        } catch(IOException e) {
-            failed();
-        } finally {
-            Util.closeSilently(session);
-        }
+
+        // フリーズ防止
+        Util.postAsync(new Runnable() {
+            @Override
+            public void run() {
+                PackageInstaller.Session session = null;
+                try {
+                    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+                    params.setInstallLocation(PackageInfo.INSTALL_LOCATION_AUTO);
+                    sessionId = mPackageInstaller.createSession(params);
+                    session = mPackageInstaller.openSession(sessionId);
+                    writeFileToSession(installFile, session);
+                    session.commit(getIntentSender(sessionId));
+                } catch(IOException e) {
+                    // これは一応メインで実行
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            failed();
+                        }
+                    });
+                } finally {
+                    Util.closeSilently(session);
+                }
+            }
+        });
     }
 
     /**

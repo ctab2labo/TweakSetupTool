@@ -2,6 +2,8 @@ package com.github.ctab2labo.tweaksetuptool.app_downloader.json;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.Util;
@@ -9,9 +11,8 @@ import com.github.ctab2labo.tweaksetuptool.app_downloader.task.FileDownloadTask;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.task.InstallBaseTask;
 
 import java.io.File;
-import java.io.Serializable;
 
-public class AppInfo implements Serializable {
+public class AppInfo implements Parcelable {
     private static final long serialVersionUID = 1L;
 
     public static final int PROGRESS_NONE = -1;
@@ -183,4 +184,40 @@ public class AppInfo implements Serializable {
     public void setOnInstallFinishListener(InstallBaseTask.OnFinishListener onInstallFinishListener) {
         this.onInstallFinishListener2 = onInstallFinishListener;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+        parcel.writeString(url);
+        parcel.writeString(summary);
+        parcel.writeString(String.valueOf(isChecked));
+        parcel.writeInt(progress);
+    }
+
+
+    private AppInfo(Parcel parcel) {
+        this();
+        name = parcel.readString();
+        url = parcel.readString();
+        summary = parcel.readString();
+        isChecked = Boolean.parseBoolean(parcel.readString());
+        progress = parcel.readInt();
+    }
+
+    public static final Parcelable.Creator<AppInfo> CREATOR = new Creator<AppInfo>() {
+        @Override
+        public AppInfo createFromParcel(Parcel parcel) {
+            return new AppInfo(parcel);
+        }
+
+        @Override
+        public AppInfo[] newArray(int i) {
+            return new AppInfo[i];
+        }
+    };
 }

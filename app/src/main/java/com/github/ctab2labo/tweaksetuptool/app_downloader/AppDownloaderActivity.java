@@ -17,19 +17,14 @@ import android.widget.ListView;
 import com.github.ctab2labo.tweaksetuptool.R;
 import com.github.ctab2labo.tweaksetuptool.Util;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.adapter.DeliveryListAdapter;
-import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppInfo;
+import com.github.ctab2labo.tweaksetuptool.app_downloader.json.AppInfoListParcelable;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.json.DeliveryList;
 import com.github.ctab2labo.tweaksetuptool.app_downloader.task.DialogFileDownloadTask;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 
 public class AppDownloaderActivity extends Activity {
-    // やり方は汚いけど、とりあえずこれで...
-    // static変数でりすとをわたす。
-    static ArrayList<AppInfo> appInfoList;
-
     private ListView mainList;
     private Button startButton;
     private DeliveryList deliveryList;
@@ -92,7 +87,8 @@ public class AppDownloaderActivity extends Activity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(AppDownloaderActivity.this, AppInstallActivity.class);
-                appInfoList = adapter.getCheckedAppList();
+                AppInfoListParcelable parcelable = new AppInfoListParcelable(adapter.getCheckedAppList());
+                intent.putExtra(AppInstallActivity.EXTRA_DOWNLOAD_LIST, parcelable);
                 startActivity(intent);
             }
         });

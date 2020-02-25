@@ -1,6 +1,7 @@
 package com.github.ctab2labo.tweaksetuptool.app_downloader.task;
 
 import android.app.DownloadManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -17,6 +18,8 @@ public class FileDownloadTask {
     private final CharSequence title;
     private final CharSequence description;
     private final DownloadManager downloadManager;
+    private final ContentResolver contentResolver;
+    private final ContentObserver fileDownloiadObserver = new DownloadObserver(this);
 
     private OnProgressUpdateListener onProgressUpdateListener;
     private OnFinishedListener onFinishedListener;
@@ -34,6 +37,7 @@ public class FileDownloadTask {
         this.description = description;
         this.downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         if (this.downloadManager == null) throw new RuntimeException("DownloadManager returned null");
+        this.contentResolver = context.getContentResolver();
     }
 
     /**
@@ -107,7 +111,15 @@ public class FileDownloadTask {
         this.contentId = Uri.parse("content://downloads/my_downloads/" + id);
 
         // ついでにオブザーバーも設定
-        context.getContentResolver().registerContentObserver(Uri.parse("content://downloads/my_downloads"), true, new DownloadObserver(this));
+        registerObserver();
+    }
+
+    private void registerObserver() {
+        context.getContentResolver().registerContentObserver(Uri.parse("content://downloads/my_downloads"), true, fileDownloiadObserver);
+    }
+
+    private void unregisterObserver() {
+        context.getContentResolver().unregisterContentObserver(fileDownloiadObserver);
     }
 
     /**
@@ -123,6 +135,7 @@ public class FileDownloadTask {
      * リスナーに失敗したことを通知
      */
     protected void onFailed() {
+        unregisterObserver();
         if (onFinishedListener != null) {
             onFinishedListener.onFailed(downloadUri);
         }
@@ -132,6 +145,7 @@ public class FileDownloadTask {
      * リスナーに成功したことを通知
      */
     protected void onSuccessful() {
+        unregisterObserver();
         if (onFinishedListener != null) {
             onFinishedListener.onSuccessful(downloadUri, downloadedFile);
         }
