@@ -44,6 +44,6 @@ public class AppInstallActivity extends Activity {
                 finish();
             }
         });
-        adapter.startAllDownload();
+        adapter.startNextDownload();
     }
 }

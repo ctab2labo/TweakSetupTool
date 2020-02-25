@@ -30,6 +30,7 @@ public class DownloadListAdapter extends BaseAdapter {
         @Override
         public void onFailed(Uri downloadUri) {
             DownloadListAdapter.this.notifyDataSetChanged();
+            startNextDownload(); // とりあえず次のダウンロードを始める。
         }
     };
     private FileDownloadTask.OnProgressUpdateListener onProgressUpdateListener = new FileDownloadTask.OnProgressUpdateListener() {
@@ -42,11 +43,13 @@ public class DownloadListAdapter extends BaseAdapter {
         @Override
         public void onSuccessful(File filePath) {
             DownloadListAdapter.this.notifyDataSetChanged();
+            startNextDownload(); // 次のダウンロードを始める。
         }
 
         @Override
         public void onFailed(File filePath) {
             DownloadListAdapter.this.notifyDataSetChanged();
+            startNextDownload(); // とりあえず次のダウンロードを始める。
         }
     };
 
@@ -126,15 +129,18 @@ public class DownloadListAdapter extends BaseAdapter {
         return view;
     }
 
-    public void startAllDownload() {
+    public void startNextDownload() {
         int index = 0;
-
         for (AppInfo appInfo : downloadList) {
-            appInfo.startDownload(context);
-            appInfo.setOnDownloadFinishedListener(onDownloadFinishedListener);
-            appInfo.setOnProgressUpdateListener(onProgressUpdateListener);
-            appInfo.setOnInstallFinishListener(onInstallFinishListener);
-            downloadList.set(index, appInfo);
+            if (appInfo.getDownloadProgress() == AppInfo.PROGRESS_NONE) {
+                // 一つだけダウンロードを始める。
+                appInfo.setOnInstallFinishListener(onInstallFinishListener);
+                appInfo.setOnProgressUpdateListener(onProgressUpdateListener);
+                appInfo.setOnDownloadFinishedListener(onDownloadFinishedListener);
+                appInfo.startDownload(context);
+                downloadList.set(index, appInfo);
+                break;
+            }
             index++;
         }
     }

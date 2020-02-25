@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.DarkActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".app_downloader.AppInstallActivity"></activity>
+        <activity android:name=".app_downloader.AppInstallActivity" android:launchMode="singleTask" />
         <activity android:name=".menu.activity.MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
